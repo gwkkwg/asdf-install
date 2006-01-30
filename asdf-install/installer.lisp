@@ -366,14 +366,19 @@ installed or not in the path."))))
 	  (force-output)
 	  #+:clisp (setf (stream-element-type stream)
 			 '(unsigned-byte 8))
-	  (with-open-file (o file-name :direction :output
+	  (with-open-file 
+	    #-(and allegro-version>= (not (version>= 8 0)))
+	    (o file-name :direction :output
 			     #+(or :clisp :digitool (and :lispworks :win32))
 			     :element-type
 			     #+(or :clisp :digitool (and :lispworks :win32))
 			     '(unsigned-byte 8)
-			     #+:sbcl #+:sbcl
-			     :external-format :latin1
+                           #+:sbcl #+:sbcl :latin1 :external-format
 			     :if-exists :supersede)
+	    ;; for Allegro  versions  < 8.0,  the above  #+sbcl #+sbcl
+	    ;; will cause an error [2006/01/09:rpg]
+	    #+(and allegro-version>= (not (version>= 8 0)))
+	    (o file-name :direction :output :if-exists :supersede)
 	    #+(or :cmu :digitool)
 	    (copy-stream stream o)
 	    #-(or :cmu :digitool)
@@ -389,7 +394,7 @@ installed or not in the path."))))
       (restart-case 
 	  (verify-gpg-signature/url url file-name)
 	(skip-gpg-check (&rest rest)
-	                :report "Don't ckeck GPG signature for this package"
+	                :report "Don't check GPG signature for this package"
                         (declare (ignore rest))
 	                nil)))))
 
@@ -568,80 +573,81 @@ installed or not in the path."))))
 ;;; This is the external entry point.
 
 (defun install (&rest packages)
-  (let ((*temporary-files* nil)
-	(*trusted-uids*
-	 (let ((p (merge-pathnames "trusted-uids.lisp" *private-asdf-install-dirs*)))
-	   (when (probe-file p)
-	     (with-open-file (f p) (read f)))))
-        ;; (installed-packages nil)
-        )
+  (let* ((*temporary-files* nil)
+         (trusted-uid-file 
+          (merge-pathnames "trusted-uids.lisp" *private-asdf-install-dirs*))
+	 (*trusted-uids*
+          (when (probe-file trusted-uid-file)
+            (with-open-file (f trusted-uid-file) (read f))))
+         (old-uids (copy-list *trusted-uids*)))
     (unwind-protect
-        (destructuring-bind (source system name) (where)
-          (declare (ignore name))
-          (labels ((one-iter (packages)
-                     (let ((installed-package-sysfiles
-                            (loop for p in (mapcar #'string packages)
-                                  unless
-                                  #+(or :sbcl :alisp) (probe-file p)
-                                  #-(or :sbcl :alisp) (and (/= (mismatch p "http://") 7)
-                                                           (probe-file p))
-                                  do (let ((tmp (temp-file-name p)))
-                                       (pushnew tmp *temporary-files*)
-                                       (download-files-for-package p tmp)
-                                       (setf p tmp))
-                                  end
-                                  do (installer-msg t "Installing ~A in ~A, ~A"
-                                                    p
-                                                    source
-                                                    system)
-                                  append (install-package source
-                                                          system
-                                                          p)))
-                           )
+      (destructuring-bind (source system name) (where)
+        (declare (ignore name))
+        (labels ((one-iter (packages)
+                   (let ((installed-package-sysfiles
+                          (loop for p in (mapcar #'string packages)
+                                unless
+                                #+(or :sbcl :alisp) (probe-file p)
+                                #-(or :sbcl :alisp) (and (/= (mismatch p "http://") 7)
+                                                         (probe-file p))
+                                do (let ((tmp (temp-file-name p)))
+                                     (pushnew tmp *temporary-files*)
+                                     (download-files-for-package p tmp)
+                                     (setf p tmp))
+                                end
+                                do (installer-msg t "Installing ~A in ~A, ~A"
+                                                  p source system)
+                                append (install-package source system p))))
                      (dolist (sysfile installed-package-sysfiles)
                        (handler-bind
-                           (
-                           #+asdf
-                           (asdf:missing-dependency
-                            (lambda (c) 
-                              (installer-msg t
-                                             "Downloading package ~A, required by ~A~%"
-                                             (asdf::missing-requires c)
-                                             (asdf:component-name
-                                              (asdf::missing-required-by c)))
-                              (one-iter (list
-                                         (asdf::coerce-name
-                                          (asdf::missing-requires c))))
-                              (invoke-restart 'retry)))
-
-                           #+mk-defsystem
-                           (make:missing-component
-                            (lambda (c) 
-                              (installer-msg t
-                                             "Downloading package ~A, required by ~A~%"
-                                           (make:missing-component-name c)
-                                           (pathname-name sysfile) ; This should work.
-                                           )
-                              (one-iter (list (make:missing-component-name c)))
-                              (invoke-restart 'retry)))
-                            )
-
+                         (
+                          #+asdf
+                          (asdf:missing-dependency
+                           (lambda (c) 
+                             (installer-msg t
+                                            "Downloading package ~A, required by ~A~%"
+                                            (asdf::missing-requires c)
+                                            (asdf:component-name
+                                             (asdf::missing-required-by c)))
+                             (one-iter (list
+                                        (asdf::coerce-name
+                                         (asdf::missing-requires c))))
+                             (invoke-restart 'retry)))
+                          
+                          #+mk-defsystem
+                          (make:missing-component
+                           (lambda (c) 
+                             (installer-msg t
+                                            "Downloading package ~A, required by ~A~%"
+                                            (make:missing-component-name c)
+                                            (pathname-name sysfile) ; This should work.
+                                            )
+                             (one-iter (list (make:missing-component-name c)))
+                             (invoke-restart 'retry))))
+                         
                          (loop (multiple-value-bind (ret restart-p)
-                                   (with-simple-restart
-                                       (retry "Retry installation")
-                                     (load-system-definition sysfile))
+                                                    (with-simple-restart
+                                                      (retry "Retry installation")
+                                                      (load-system-definition sysfile))
                                  (declare (ignore ret))
                                  (unless restart-p (return))))
-                         ))))
-                   )
-            (one-iter packages)))
-      (let ((p (merge-pathnames "trusted-uids.lisp" *private-asdf-install-dirs*)))
-        (when (probe-file p)
-	  (with-open-file (out p
-                               :direction :output
-                               :if-exists :supersede)
-	    (with-standard-io-syntax
-	      (prin1 *trusted-uids* out)))))
+                         )))))
+          (one-iter packages)))
+      
+      ;;; cleanup
+      (unless (equal old-uids *trusted-uids*)
+        (let ((create-file-p nil))
+	  (unless (probe-file trusted-uid-file)
+	    (installer-msg t "Trusted UID file ~A does not exist"
+			   (namestring trusted-uid-file))
+	    (setf create-file-p
+		  (y-or-n-p "Do you want to create the file?")))
+          (when (or create-file-p (probe-file trusted-uid-file))
+	    (with-open-file (out trusted-uid-file
+                                 :direction :output
+                                 :if-exists :supersede)
+	      (with-standard-io-syntax
+	        (prin1 *trusted-uids* out))))))
       (dolist (l *temporary-files* t)
 	(when (probe-file l) (delete-file l))))))
 
