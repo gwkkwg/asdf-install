@@ -1,8 +1,15 @@
 #!/bin/sh
 
-### Grab stuff from GBBOpen
+tempDir="$HOME/temporary"
+sourceDir="$HOME/darcs"
+source="asdf-install"
+force="t"
+install=""
+
+### Grab stuff from Sourceforge
+rm asdf-install/doc/index.html
 result=""
-cvs -d :ext:gwking@cvs.sourceforge.net:/cvsroot/cclan checkout asdf-install
+cvs -d :ext:gwking@cvs.sourceforge.net:/cvsroot/cclan update asdf-install
 result="result:$?"
 echo "Result is '$result'"
 
@@ -17,9 +24,36 @@ if [ $? -ne 0 ]; then
 	echo "No changes to record"
 else
 	darcs record -a -m "Recording latest changes from CCLAN"
+	install="yes"
+fi
 
-	### Now we can proceed in the usual fashion
-#	make-1-asdf-package "portable-threads" "portable-threads"
-#	rsync-1-repository  "portable-threads" "portable-threads"
+if [ -z "$install" && -z "$force" ]; then
+	echo "Not rebuilding"
+else
+	### Now we can proceed in the semi-usual fashion
+	echo "Rebuilding"
+	
+	PASSWORD=`cat ~/.ssh/goomber`
+	SOFTWARE="${source}_latest"
+	echo "Making $SOFTWARE"
+	pushd . > /dev/null
+	cd $tempDir
+	if [ -d asdf-install ]; then
+		rm -r asdf-install
+	fi
+	mkdir asdf-install
+	cd asdf-install
+	darcs get $sourceDir/$source
+	rm -r $source/_darcs
+	if [ -f $source/version ]; then
+		VERSION=`cat $source/version`
+		echo $VERSION
+	fi
+	cd asdf-install
+	tar -cf $SOFTWARE.tar $source
+	gzip $SOFTWARE.tar
+	echo $PASSWORD | gpg --batch --passphrase-fd 0 -b -a $SOFTWARE.tar.gz
+
+	rsync-1-repository  "asdf-install" "asdf-install"
 fi
 
