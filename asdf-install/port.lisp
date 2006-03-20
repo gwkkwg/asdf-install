@@ -106,10 +106,12 @@
      s (car (sb-bsd-sockets:host-ent-addresses
              (sb-bsd-sockets:get-host-by-name (url-host url))))
      (url-port url))
-    (sb-bsd-sockets:socket-make-stream s
-                                       :input t
-                                       :output t
-                                       :buffering :full))
+    (sb-bsd-sockets:socket-make-stream 
+     s
+     :input t 
+     :output t
+     :buffering :full
+     :external-format :iso-8859-1))
   #+:cmu
   (sys:make-fd-stream (ext:connect-to-inet-socket (url-host url) (url-port url))
                       :input t :output t :buffering :full)

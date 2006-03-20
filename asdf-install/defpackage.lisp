@@ -1,7 +1,7 @@
 (cl:in-package :cl-user)
 
 (defpackage :asdf-install
-  (:use "CL")
+  (:use #:common-lisp)
   (:export
 
    ;; Customizable variables.
@@ -28,9 +28,10 @@
    #:sysdef-source-dir-search
    #:uninstall
    #:install
+
    ;; proxy authentication
    #:*proxy-user*
    #:*proxy-passwd*))
 
 (defpackage :asdf-install-customize
-  (:use "CL" "ASDF-INSTALL"))
+  (:use #:common-lisp #:asdf-install))

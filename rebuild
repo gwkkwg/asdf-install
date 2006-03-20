@@ -3,20 +3,20 @@
 ### Grab stuff from GBBOpen
 result=""
 cvs -d :ext:gwking@cvs.sourceforge.net:/cvsroot/cclan checkout asdf-install
-result="$? $result"
-echo "Result is $result"
+result="result:$?"
+echo "Result is '$result'"
 
-if [ "$result" != "0 0 0 " ]; then
+if [ "$result" != "result:0" ]; then
     echo "failed to get data: " $result
     exit -1
 fi
 
 ### Put it in darcs
-#darcs whats --summ --look
+darcs whats --summ --look
 if [ $? -ne 0 ]; then
 	echo "No changes to record"
 else
-#	darcs record -a -m "Recording latest changes from GBBOpen"
+	darcs record -a -m "Recording latest changes from CCLAN"
 
 	### Now we can proceed in the usual fashion
 #	make-1-asdf-package "portable-threads" "portable-threads"

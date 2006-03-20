@@ -50,14 +50,14 @@
 ;;; * (split-sequence #\; ";oo;bar;ba;" :start 1 :end 9)
 ;;; -> ("oo" "bar" "b"), 9
 
-(defpackage "SPLIT-SEQUENCE"
-  (:use "CL")
-  (:nicknames "PARTITION")
-  (:export "SPLIT-SEQUENCE" "SPLIT-SEQUENCE-IF" "SPLIT-SEQUENCE-IF-NOT"
-	   "PARTITION" "PARTITION-IF" "PARTITION-IF-NOT")
-  (:documentation "The SPLIT-SEQUENCE package provides functionality for Common Lisp sequences analagous to Perl's split operator."))
+(defpackage #:split-sequence
+  (:use #:common-lisp)
+  (:nicknames #:partition)
+  (:export #:split-sequence #:split-sequence-if #:split-sequence-if-not
+	   #:partition #:partition-if #:partition-if-not)
+  (:documentation "the SPLIT-SEQUENCE package provides functionality for common lisp sequences analagous to perl's split operator."))
 
-(in-package "SPLIT-SEQUENCE")
+(in-package #:split-sequence)
 
 (defun split-sequence (delimiter seq &key (count nil) (remove-empty-subseqs nil) (from-end nil) (start 0) (end nil) (test nil test-supplied) (test-not nil test-not-supplied) (key nil key-supplied))
   "Return a list of subsequences in seq delimited by delimiter.

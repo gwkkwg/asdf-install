@@ -176,13 +176,6 @@ namestrings.")
 ;;;---------------------------------------------------------------------------
 ;;; Conditions.
 
-(define-condition shell-error (error)
-  ()
-  (:report (lambda (c s)
-             (declare (ignore c))
-             (format s "Call to GPG failed.  Perhaps GPG is not~
-installed or not in the path."))))
-
 (define-condition download-error (error)
   ((url :initarg :url :reader download-url)
    (response :initarg :response :reader download-response))
@@ -201,6 +194,13 @@ installed or not in the path."))))
   (:report (lambda (c s)
 	     (format s "GPG failed with error status:~%~S"
 		     (gpg-error-message c)))))
+
+(define-condition shell-error (error)
+  ()
+  (:report (lambda (c s)
+             (declare (ignore c))
+             (format s "Call to GPG failed. Perhaps GPG is not installed or not~
+ in the path."))))
 
 (define-condition no-signature (gpg-error) ())
 
@@ -342,57 +342,57 @@ installed or not in the path."))))
 
 (defun download-files-for-package (package-name-or-url file-name)
   (let ((url (if (= (mismatch package-name-or-url "http://") 7)
-	         package-name-or-url
-	         (format nil "http://www.cliki.net/~A?download"
-		         package-name-or-url)))
+               package-name-or-url
+               (format nil "http://www.cliki.net/~A?download"
+                       package-name-or-url)))
         )
     (destructuring-bind (response headers stream)
-	(block got
-	  (loop
-	   (destructuring-bind (response headers stream) (url-connection url)
-	     (unless (member response '(301 302))	       
-	       (return-from got (list response headers stream)))
-	     (close stream)
-	     (setf url (cdr (assoc :location headers))))))
-      (with-open-stream (stream stream)
-	(when (>= response 400)
-	  (error 'download-error :url url :response response))
-	(let ((length (parse-integer (or (cdr (assoc :content-length headers)) "")
-				     :junk-allowed t)))
-	  (installer-msg t "Downloading ~A bytes from ~A to ~A ..."
-			 (or length "some unknown number of")
-			 url
-			 file-name)
-	  (force-output)
-	  #+:clisp (setf (stream-element-type stream)
-			 '(unsigned-byte 8))
-	  (with-open-file 
-	    #-(and allegro-version>= (not (version>= 8 0)))
-	    (o file-name :direction :output
-			     #+(or :clisp :digitool (and :lispworks :win32))
-			     :element-type
-			     #+(or :clisp :digitool (and :lispworks :win32))
-			     '(unsigned-byte 8)
-                           #+:sbcl #+:sbcl :latin1 :external-format
-			     :if-exists :supersede)
-	    ;; for Allegro  versions  < 8.0,  the above  #+sbcl #+sbcl
-	    ;; will cause an error [2006/01/09:rpg]
-	    #+(and allegro-version>= (not (version>= 8 0)))
-	    (o file-name :direction :output :if-exists :supersede)
-	    #+(or :cmu :digitool)
-	    (copy-stream stream o)
-	    #-(or :cmu :digitool)
-	    (if length
-		(let ((buf (make-array length
-				       :element-type
-				       (stream-element-type stream))))
-		  #-:clisp (read-sequence buf stream)
-		  #+:clisp (ext:read-byte-sequence buf stream :no-hang nil)
-		  (write-sequence buf o))
-		(copy-stream stream o)))))
+	                (block got
+	                  (loop
+	                    (destructuring-bind (response headers stream) (url-connection url)
+	                      (unless (member response '(301 302))	       
+	                        (return-from got (list response headers stream)))
+	                      (close stream)
+	                      (setf url (cdr (assoc :LOCATION headers))))))
+      (when (>= response 400)
+        (error 'download-error :url url :response response))
+      (let ((length (parse-integer (or (cdr (assoc :CONTENT-LENGTH headers)) "")
+		                   :junk-allowed t)))
+	(installer-msg t "Downloading ~A bytes from ~A to ~A ..."
+		       (or length "some unknown number of")
+                       url
+                       file-name)
+	(force-output)
+        #+:clisp (setf (stream-element-type stream)
+                       '(unsigned-byte 8))
+        (with-open-file 
+          #-(and allegro-version>= (not (version>= 8 0)))
+          (o file-name :direction :output
+             #+(or :clisp :digitool (and :lispworks :win32))
+             :element-type
+             #+(or :clisp :digitool (and :lispworks :win32))
+             '(unsigned-byte 8)
+             #+:sbcl #+:sbcl :external-format :latin1
+             :if-exists :supersede)
+          ;; for Allegro  versions  < 8.0,  the above  #+sbcl #+sbcl
+          ;; will cause an error [2006/01/09:rpg]
+          #+(and allegro-version>= (not (version>= 8 0)))
+          (o file-name :direction :output :if-exists :supersede)
+          #+(or :cmu :digitool)
+          (copy-stream stream o)
+          #-(or :cmu :digitool)
+	  (if length
+            (let ((buf (make-array length
+                                   :element-type
+                                   (stream-element-type stream))))
+              #-:clisp (read-sequence buf stream)
+              #+:clisp (ext:read-byte-sequence buf stream :no-hang nil)
+              (write-sequence buf o))
+            (copy-stream stream o))))
+      (close stream)
       (terpri)
       (restart-case 
-	  (verify-gpg-signature/url url file-name)
+        (verify-gpg-signature/url url file-name)
 	(skip-gpg-check (&rest rest)
 	                :report "Don't check GPG signature for this package"
                         (declare (ignore rest))
@@ -413,43 +413,44 @@ installed or not in the path."))))
             do (print l)
             when (> (mismatch l "[GNUPG:]") 6)
             do (destructuring-bind (_ tag &rest data)
-                   (split-sequence:split-sequence-if (lambda (x)
-                                                       (find x '(#\Space #\Tab)))
-                                                     l)
-	       (declare (ignore _))
-               (pushnew (cons (intern tag :keyword)
-			      data) tags)))
+                                   (split-sequence:split-sequence-if (lambda (x)
+                                                                       (find x '(#\Space #\Tab)))
+                                                                     l)
+	         (declare (ignore _))
+                 (pushnew (cons (intern (string-upcase tag) :keyword)
+			        data) tags)))
       (ignore-errors
-        (close gpg-stream)))
+       (close gpg-stream)))
+    ;; test that command returned something 
     (unless tags
       (error 'shell-error))
     ;; test for obvious key/sig problems
-    (let ((errsig (assoc :errsig tags)))
+    (let ((errsig (assoc :ERRSIG tags)))
       (and errsig (error 'key-not-found :key-id (second errsig))))
-    (let ((badsig (assoc :badsig tags)))
+    (let ((badsig (assoc :BADSIG tags)))
       (and badsig (error 'key-not-found :key-id (second badsig))))
-    (let* ((good (assoc :goodsig tags))
+    (let* ((good (assoc :GOODSIG tags))
 	   (id (second good))
 	   (name (format nil "~{~A~^ ~}" (nthcdr 2 good))))
       ;; good signature, but perhaps not trusted
-      (unless (or (assoc :trust_ultimate tags)
-		  (assoc :trust_fully tags))
+      (unless (or (assoc :TRUST_ULTIMATE tags)
+		  (assoc :TRUST_FULLY tags))
 	(cerror "Install the package anyway"
 		'key-not-trusted
 		:key-user-name name
 		:key-id id))
       (loop
-       (when
-	   (restart-case
-	       (or (assoc id *trusted-uids* :test #'equal)
-		   (error 'author-not-trusted
-			  :key-user-name name
-			  :key-id id))
-	     (add-key (&rest rest)
-	       :report "Add to package supplier list"
-               (declare (ignore rest))
-	       (pushnew (list id name) *trusted-uids*)))
-	 (return))))))
+        (when
+          (restart-case
+            (or (assoc id *trusted-uids* :test #'equal)
+                (error 'author-not-trusted
+                       :key-user-name name
+                       :key-id id))
+            (add-key (&rest rest)
+	             :report "Add to package supplier list"
+                     (declare (ignore rest))
+	             (pushnew (list id name) *trusted-uids*)))
+	  (return))))))
 
 
 (defun verify-gpg-signature/url (url file-name)
@@ -472,7 +473,7 @@ installed or not in the path."))))
                        (setf (char data i) (code-char byte)))))))
           (if (= response 200)
             (let ((data (make-string (parse-integer
-                                      (cdr (assoc :content-length headers))
+                                      (cdr (assoc :CONTENT-LENGTH headers))
                                       :junk-allowed t))))
               (read-signature data stream)
               (verify-gpg-signature/string data file-name))
@@ -558,7 +559,6 @@ installed or not in the path."))))
             (symlink-files sysfile target))
 	  collect sysfile)))
 
-
 (defun temp-file-name (p)
   (let* ((pos-slash (position #\/ p :from-end t))
 	 (pos-dot (position #\. p :start (or pos-slash 0))))
@@ -597,8 +597,16 @@ installed or not in the path."))))
                                 end
                                 do (installer-msg t "Installing ~A in ~A, ~A"
                                                   p source system)
-                                append (install-package source system p))))
-                     (dolist (sysfile installed-package-sysfiles)
+                                append (install-package source system p)))
+                         )
+                     (declare (ignore installed-package-sysfiles))
+                     (dolist
+                       ;; 20 Mar 2006
+                       ;; only install the packages we asked for
+                       (package packages) 
+                       #+old-asdf-behavior
+                       ;; install every package we downloaded
+                       (sysfile installed-package-sysfiles)
                        (handler-bind
                          (
                           #+asdf
@@ -620,7 +628,7 @@ installed or not in the path."))))
                              (installer-msg t
                                             "Downloading package ~A, required by ~A~%"
                                             (make:missing-component-name c)
-                                            (pathname-name sysfile) ; This should work.
+                                            package
                                             )
                              (one-iter (list (make:missing-component-name c)))
                              (invoke-restart 'retry))))
@@ -628,7 +636,7 @@ installed or not in the path."))))
                          (loop (multiple-value-bind (ret restart-p)
                                                     (with-simple-restart
                                                       (retry "Retry installation")
-                                                      (load-system-definition sysfile))
+                                                      (load-package package))
                                  (declare (ignore ret))
                                  (unless restart-p (return))))
                          )))))
@@ -651,13 +659,20 @@ installed or not in the path."))))
       (dolist (l *temporary-files* t)
 	(when (probe-file l) (delete-file l))))))
 
+(defun load-package (package)
+  #+asdf
+  (asdf:operate 'asdf:load-op package))
 
+#+Old
 (defun load-system-definition (sysfile)
   (declare (type pathname sysfile))
   #+asdf
   (when (or (string-equal "asd" (pathname-type sysfile))
             (string-equal "asdf" (pathname-type sysfile)))
     (installer-msg t "Loading system ~S via ASDF." (pathname-name sysfile))
+    ;; just load the system definition
+    (load sysfile)
+    #+Ignore
     (asdf:operate 'asdf:load-op (pathname-name sysfile)))
 
   #+mk-defsystem
@@ -700,7 +715,7 @@ installed or not in the path."))))
           ))
       )))
 
-
+      
 ;;; some day we will also do UPGRADE, but we need to sort out version
 ;;; numbering a bit better first
 
