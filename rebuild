@@ -29,7 +29,7 @@ else
 	install="yes"
 fi
 
-if [ -z "$install" -and -z "$force" ]; then
+if [ \( -z "$install" \) -and \( -z "$force" \) ]; then
 	echo "Not rebuilding"
 else
 	### Now we can proceed in the semi-usual fashion
