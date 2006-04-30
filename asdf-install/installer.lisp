@@ -5,98 +5,6 @@
 (defun installer-msg (stream format-control &rest format-arguments)
   (apply #'format stream ";;; ASDF-INSTALL: ~@?~%" format-control format-arguments))
 
-
-#+:digitool
-(defparameter *home-volume-name*
-  (second (pathname-directory (truename (user-homedir-pathname))))
-  "Digitool MCL retains the OS 9 convention that ALL volumes have a
-name which includes the startup volume. OS X doesn't know about this.
-This figures in the home path and in the normalization for system
-namestrings.")
-
-(defvar *proxy* (get-env-var "http_proxy"))
-
-(defvar *cclan-mirror*
-  (or (get-env-var "CCLAN_MIRROR")
-      "http://ftp.linux.org.uk/pub/lisp/cclan/"))
-
-#+(or :win32 :mswindows)
-(defvar *cygwin-bin-directory*
-  (pathname "C:\\PROGRA~1\\Cygwin\\bin\\"))
-
-#+(or :win32 :mswindows)
-(defvar *cygwin-bash-program*
-  "C:\\PROGRA~1\\Cygwin\\bin\\bash.exe")
-
-(defvar *gnu-tar-program*
-  #-(or :netbsd :freebsd) "tar"
-  #+(or :netbsd :freebsd) "gtar"
-  "Path to the GNU tar program")
-
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (defparameter *supported-defsystems*
-    (list :mk-defsystem
-          :asdf
-
-          ;; Add others.
-          ;; #+lispworks :common-defsystem
-          ))
-          
-
-  (unless (some (lambda (defsys-tag)
-                  (member defsys-tag *features*))
-                *features*)
-    (error "ASDF-INSTALL requires one of the following \"defsystem\" utilities to work: ~A"
-           *supported-defsystems*)))
-
-
-
-(defun directorify (name)
-  ;; input name may or may not have a trailing #\/, but we know we
-  ;; want a directory
-  (let ((path (pathname name)))
-    (if (pathname-name path)
-	(merge-pathnames
-	 (make-pathname :directory `(:relative ,(pathname-name path))
-			:name "")
-	 path)
-	path)))
-
-(defvar *asdf-install-dirs*
-  (directorify (or #+sbcl (get-env-var "SBCL_HOME")
-                   (get-env-var "ASDF_INSTALL_DIR")
-                   (make-pathname :directory
-                                  `(:absolute
-                                    #+digitool ,*home-volume-name*
-                                    "usr" "local" "asdf-install")))))
-
-#+sbcl ; Deprecated.
-(define-symbol-macro *sbcl-home* *asdf-install-dirs*)
-
-
-(defvar *private-asdf-install-dirs*
-  #+:sbcl
-  (merge-pathnames (make-pathname :directory '(:relative ".sbcl"))
-		   (truename (user-homedir-pathname)))
-  #-:sbcl
-  (cond ((get-env-var "PRIVATE_ASDF_INSTALL_DIR")
-          (directorify (get-env-var "PRIVATE_ASDF_INSTALL_DIR")))
-        (t
-          (merge-pathnames (make-pathname :directory '(:relative ".asdf-install-dir"))
-                           (truename (user-homedir-pathname))))))
-
-#+sbcl ; Deprecated.
-(define-symbol-macro *dot-sbcl* *private-asdf-install-dirs*)
-
-
-(defvar *trusted-uids* nil)
-
-(defvar *verify-gpg-signatures* t)
-
-(defvar *safe-url-prefixes* nil)
-
-(defvar *preferred-location* nil)
-
 (defun verify-gpg-signatures-p (url)
   (labels ((prefixp (prefix string)
 	     (let ((m (mismatch prefix string)))
@@ -109,18 +17,6 @@ namestrings.")
 	*safe-url-prefixes*))
       (t t))))
 	  
-(defparameter *locations*
-  `((,(merge-pathnames (make-pathname :directory '(:relative "site"))
-                       *asdf-install-dirs*)
-     ,(merge-pathnames (make-pathname :directory '(:relative "site-systems"))
-                       *asdf-install-dirs*)
-     "System-wide install")
-    (,(merge-pathnames (make-pathname :directory '(:relative "site"))
-                       *private-asdf-install-dirs*)
-     ,(merge-pathnames (make-pathname :directory '(:relative "systems"))
-                       *private-asdf-install-dirs*)
-     "Personal installation")))
-
 
 #+(and (not :sbcl) :asdf)
 (pushnew `(merge-pathnames ,(make-pathname :directory '(:relative "site-systems"))
@@ -162,8 +58,6 @@ namestrings.")
   (setf *locations*
         (append *locations* (list (list site system-site loc-name)))))
 
-
-
 (eval-when (:load-toplevel :execute)
   (let* ((*package* (find-package :asdf-install-customize))
          (file (probe-file (merge-pathnames
@@ -172,59 +66,6 @@ namestrings.")
          )
     (when file (load file))))
 
-
-;;;---------------------------------------------------------------------------
-;;; Conditions.
-
-(define-condition download-error (error)
-  ((url :initarg :url :reader download-url)
-   (response :initarg :response :reader download-response))
-  (:report (lambda (c s)
-	     (format s "Server responded ~A for GET ~A"
-		     (download-response c) (download-url c)))))
-
-(define-condition signature-error (error)
-  ((cause :initarg :cause :reader signature-error-cause))
-  (:report (lambda (c s)
-	     (format s "Cannot verify package signature:  ~A"
-		     (signature-error-cause c)))))
-
-(define-condition gpg-error (error)
-  ((message :initarg :message :reader gpg-error-message))
-  (:report (lambda (c s)
-	     (format s "GPG failed with error status:~%~S"
-		     (gpg-error-message c)))))
-
-(define-condition shell-error (error)
-  ()
-  (:report (lambda (c s)
-             (declare (ignore c))
-             (format s "Call to GPG failed. Perhaps GPG is not installed or not~
- in the path."))))
-
-(define-condition no-signature (gpg-error) ())
-
-(define-condition key-not-found (gpg-error)
-  ((key-id :initarg :key-id :reader key-id))
-  (:report (lambda (c s)
-	     (format s "No key found for key id 0x~A. ~
-                        Try some command like ~%  gpg  --recv-keys 0x~A"
-		     (key-id c) (key-id c)))))
-
-(define-condition key-not-trusted (gpg-error)
-  ((key-id :initarg :key-id :reader key-id)
-   (key-user-name :initarg :key-user-name :reader key-user-name))
-  (:report (lambda (c s)
-	     (format s "GPG warns that the key id 0x~A (~A) is not fully trusted"
-		     (key-id c) (key-user-name c)))))
-
-(define-condition author-not-trusted (gpg-error)
-  ((key-id :initarg :key-id :reader key-id)
-   (key-user-name :initarg :key-user-name :reader key-user-name))
-  (:report (lambda (c s)
-	     (format s "~A (key id ~A) is not on your package supplier list"
-		     (key-user-name c) (key-id c)))))
-  
 
 ;;;---------------------------------------------------------------------------
 ;;; URL handling.
@@ -276,9 +117,6 @@ namestrings.")
             (elt *encode-table* (logand value #x3F))))
     result))
 
-(defvar *proxy-user* nil)
-(defvar *proxy-passwd* nil)
-
 (defun request-uri (url)
   (assert (string-equal url "http://" :end1 7))
   (if *proxy*
@@ -299,46 +137,20 @@ namestrings.")
               #\Return #\Linefeed))
     (format stream "~C~C" #\Return #\Linefeed)
     (force-output stream)
-    (flet (#-:digitool
-           (read-header-line ()
-             (read-line stream))
-           #+:digitool
-           (read-header-line (&aux (line (make-array 16
-                                                     :element-type 'character
-                                                     :adjustable t
-                                                     :fill-pointer 0))
-                                   (byte nil))
-             (print (multiple-value-bind (reader arg)
-                        (ccl::stream-reader stream)
-                      (loop (setf byte (funcall reader arg))
-                            (case byte
-                              ((nil)
-                                (return))
-                              ((#.(char-code #\Return)
-                                  #.(char-code #\Linefeed))
-                                (case (setf byte (funcall reader arg))
-                                  ((nil #.(char-code #\Return) #.(char-code #\Linefeed)))
-                                  (t (ccl:stream-untyi stream byte)))
-                                (return))
-                              (t
-                                (vector-push-extend (code-char byte) line))))
-                      (when (or byte (plusp (length line)))
-                        line)))))
-      (list
-       (let* ((l (read-header-line))
-              (space (position #\Space l)))
-         (parse-integer l :start (1+ space) :junk-allowed t))
-       (loop for line = (read-header-line)
-             until (or (null line)
-                       (zerop (length line))
-                       (eql (elt line 0) (code-char 13)))
-             collect
-             (let ((colon (position #\: line)))
-               (cons (intern (string-upcase (subseq line 0 colon)) :keyword)
-                     (string-trim (list #\Space (code-char 13))
-                                  (subseq line (1+ colon))))))
-       stream))))
-
+    (list
+     (let* ((l (read-header-line stream))
+            (space (position #\Space l)))
+       (parse-integer l :start (1+ space) :junk-allowed t))
+     (loop for line = (read-header-line stream)
+           until (or (null line)
+                     (zerop (length line))
+                     (eql (elt line 0) (code-char 13)))
+           collect
+           (let ((colon (position #\: line)))
+             (cons (intern (string-upcase (subseq line 0 colon)) :keyword)
+                   (string-trim (list #\Space (code-char 13))
+                                (subseq line (1+ colon))))))
+     stream)))
 
 (defun download-files-for-package (package-name-or-url file-name)
   (let ((url (if (= (mismatch package-name-or-url "http://") 7)
@@ -353,10 +165,10 @@ namestrings.")
 	                      (unless (member response '(301 302))	       
 	                        (return-from got (list response headers stream)))
 	                      (close stream)
-	                      (setf url (cdr (assoc :LOCATION headers))))))
+	                      (setf url (header-value :location headers)))))
       (when (>= response 400)
         (error 'download-error :url url :response response))
-      (let ((length (parse-integer (or (cdr (assoc :CONTENT-LENGTH headers)) "")
+      (let ((length (parse-integer (or (header-value :content-length headers) "")
 		                   :junk-allowed t)))
 	(installer-msg t "Downloading ~A bytes from ~A to ~A ..."
 		       (or length "some unknown number of")
@@ -365,129 +177,131 @@ namestrings.")
 	(force-output)
         #+:clisp (setf (stream-element-type stream)
                        '(unsigned-byte 8))
-        (with-open-file 
-          #-(and allegro-version>= (not (version>= 8 0)))
-          (o file-name :direction :output
-             #+(or :clisp :digitool (and :lispworks :win32))
-             :element-type
-             #+(or :clisp :digitool (and :lispworks :win32))
-             '(unsigned-byte 8)
-             #+:sbcl #+:sbcl :external-format :latin1
-             :if-exists :supersede)
-          ;; for Allegro  versions  < 8.0,  the above  #+sbcl #+sbcl
-          ;; will cause an error [2006/01/09:rpg]
-          #+(and allegro-version>= (not (version>= 8 0)))
-          (o file-name :direction :output :if-exists :supersede)
-          #+(or :cmu :digitool)
-          (copy-stream stream o)
-          #-(or :cmu :digitool)
-	  (if length
-            (let ((buf (make-array length
-                                   :element-type
-                                   (stream-element-type stream))))
-              #-:clisp (read-sequence buf stream)
-              #+:clisp (ext:read-byte-sequence buf stream :no-hang nil)
-              (write-sequence buf o))
-            (copy-stream stream o))))
+        (let ((ok? nil) (o nil))
+          (unwind-protect
+            (progn
+              (setf o (apply #'open file-name 
+                             :direction :output :if-exists :supersede
+                             (open-file-arguments)))
+              #+(or :cmu :digitool)
+              (copy-stream stream o)
+              #-(or :cmu :digitool)
+	      (if length
+                (let ((buf (make-array length
+                                       :element-type
+                                       (stream-element-type stream))))
+                  #-:clisp (read-sequence buf stream)
+                  #+:clisp (ext:read-byte-sequence buf stream :no-hang nil)
+                  (write-sequence buf o))
+                (copy-stream stream o))
+              (setf ok? t))
+            (when o (close o :abort (null ok?))))))
       (close stream)
       (terpri)
-      (restart-case 
-        (verify-gpg-signature/url url file-name)
-	(skip-gpg-check (&rest rest)
-	                :report "Don't check GPG signature for this package"
-                        (declare (ignore rest))
-	                nil)))))
-
+      (verify-gpg-signature/url url file-name))))
 
 (defun read-until-eof (stream)
   (with-output-to-string (o)
     (copy-stream stream o)))
-
   
 (defun verify-gpg-signature/string (string file-name)
-  (let ((gpg-stream (make-stream-from-gpg-command string file-name))
-        tags)
-    (unwind-protect
-      (loop for l = (read-line gpg-stream nil nil)
-            while l
-            do (print l)
-            when (> (mismatch l "[GNUPG:]") 6)
-            do (destructuring-bind (_ tag &rest data)
-                                   (split-sequence:split-sequence-if (lambda (x)
-                                                                       (find x '(#\Space #\Tab)))
-                                                                     l)
-	         (declare (ignore _))
-                 (pushnew (cons (intern (string-upcase tag) :keyword)
-			        data) tags)))
-      (ignore-errors
-       (close gpg-stream)))
-    ;; test that command returned something 
-    (unless tags
-      (error 'shell-error))
-    ;; test for obvious key/sig problems
-    (let ((errsig (assoc :ERRSIG tags)))
-      (and errsig (error 'key-not-found :key-id (second errsig))))
-    (let ((badsig (assoc :BADSIG tags)))
-      (and badsig (error 'key-not-found :key-id (second badsig))))
-    (let* ((good (assoc :GOODSIG tags))
-	   (id (second good))
-	   (name (format nil "~{~A~^ ~}" (nthcdr 2 good))))
-      ;; good signature, but perhaps not trusted
-      (unless (or (assoc :TRUST_ULTIMATE tags)
-		  (assoc :TRUST_FULLY tags))
-	(cerror "Install the package anyway"
-		'key-not-trusted
-		:key-user-name name
-		:key-id id))
-      (loop
-        (when
-          (restart-case
-            (or (assoc id *trusted-uids* :test #'equal)
-                (error 'author-not-trusted
-                       :key-user-name name
-                       :key-id id))
-            (add-key (&rest rest)
-	             :report "Add to package supplier list"
-                     (declare (ignore rest))
-	             (pushnew (list id name) *trusted-uids*)))
-	  (return))))))
-
+  (block verify
+    (loop
+      (restart-case
+        (let ((gpg-stream (make-stream-from-gpg-command string file-name))
+              tags)
+          (unwind-protect
+            (loop for l = (read-line gpg-stream nil nil)
+                  while l
+                  do (print l)
+                  when (> (mismatch l "[GNUPG:]") 6)
+                  do (destructuring-bind (_ tag &rest data)
+                                         (split-sequence-if (lambda (x)
+                                                              (find x '(#\Space #\Tab)))
+                                                            l)
+	               (declare (ignore _))
+                       (pushnew (cons (intern (string-upcase tag) :keyword)
+			              data) tags)))
+            (ignore-errors
+             (close gpg-stream)))
+          ;; test that command returned something 
+          (unless tags
+            (error 'gpg-shell-error))
+          ;; test for obvious key/sig problems
+          (let ((errsig (header-value :errsig tags)))
+            (and errsig (error 'key-not-found :key-id errsig)))
+          (let ((badsig (header-value :badsig tags)))
+            (and badsig (error 'key-not-found :key-id badsig)))
+          (let* ((good (header-value :goodsig tags))
+	         (id (first good))
+	         (name (format nil "~{~A~^ ~}" (rest good))))
+            ;; good signature, but perhaps not trusted
+            (restart-case
+              (let ((trusted? (or (header-pair :trust_ultimate tags)
+                                  (header-pair :trust_fully tags)))
+                    (in-list? (assoc id *trusted-uids* :test #'equal)))
+                (cond ((or trusted? in-list?)
+                       ;; ok
+                       )
+                      ((not trusted?)
+                       (error 'key-not-trusted :key-user-name name :key-id id))
+                      ((not in-list?)
+                       (error 'author-not-trusted
+                         :key-user-name name :key-id id))
+                      (t
+                       (error "Boolean logic gone bad. Run for the hills"))))
+              (install-anyways (&rest rest)
+	                       :report "Don't check GPG signature for this package"
+                               (declare (ignore rest))
+	                       nil)
+              (add-key (&rest rest)
+                       :report "Add to package supplier list"
+                       (declare (ignore rest))
+                       (pushnew (list id name) *trusted-uids*))))
+          (return-from verify t))
+        (retry-gpg-check (&rest args)
+                         :report "Retry GPG check \(e.g., after downloading the key\)"
+                         (declare (ignore args))
+                         nil)))))
 
 (defun verify-gpg-signature/url (url file-name)
   (when (verify-gpg-signatures-p url)
-    (destructuring-bind (response headers stream)
-        (url-connection (concatenate 'string url ".asc"))
-      (unwind-protect
-        (flet (#-:digitool
-               (read-signature (data stream)
-                 (read-sequence data stream))
-               #+:digitool
-               (read-signature (data stream)
-                 (multiple-value-bind (reader arg)
-                     (ccl:stream-reader stream)
-                   (let ((byte 0))
-                     (dotimes (i (length data))
-                       (unless (setf byte (funcall reader arg))
-                         (error 'download-error :url  (concatenate 'string url ".asc")
-                                :response 200))
-                       (setf (char data i) (code-char byte)))))))
-          (if (= response 200)
-            (let ((data (make-string (parse-integer
-                                      (cdr (assoc :CONTENT-LENGTH headers))
-                                      :junk-allowed t))))
-              (read-signature data stream)
-              (verify-gpg-signature/string data file-name))
-            (error 'download-error :url  (concatenate 'string url ".asc")
-                   :response response)))
-        (close stream)))))
+    (let ((sig-url (concatenate 'string url ".asc")))
+      (destructuring-bind (response headers stream)
+                          (url-connection sig-url)
+        (unwind-protect
+          (flet (#-:digitool
+                 (read-signature (data stream)
+                   (read-sequence data stream))
+                 #+:digitool
+                 (read-signature (data stream)
+                   (multiple-value-bind (reader arg)
+                                        (ccl:stream-reader stream)
+                     (let ((byte 0))
+                       (dotimes (i (length data))
+                         (unless (setf byte (funcall reader arg))
+                           (error 'download-error :url sig-url
+                                  :response 200))
+                         (setf (char data i) (code-char byte)))))))
+            (if (= response 200)
+              (let ((data (make-string (parse-integer
+                                        (header-value :content-length headers)
+                                        :junk-allowed t))))
+                (read-signature data stream)
+                (verify-gpg-signature/string data file-name))
+              (error 'download-error :url sig-url
+                     :response response)))
+          (close stream))))))
 
+(defun header-value (name headers)
+  "Searchers headers for name _without_ case sensitivity. Headers should be an alist mapping symbols to values; name a symbol. Returns the value if name is found or nil if it is not."
+  (cdr (header-pair name headers)))
 
-(define-condition installation-abort (condition)
-  ()
-  (:report (lambda (c s)
-             (declare (ignore c))
-             (installer-msg s "Installation aborted."))))
-
+(defun header-pair (name headers)
+  "Searchers headers for name _without_ case sensitivity. Headers should be an alist mapping symbols to values; name a symbol. Returns the \(name value\) pair if name is found or nil if it is not."
+  (assoc name headers 
+         :test (lambda (a b) 
+                 (string-equal (symbol-name a) (symbol-name b)))))
 
 (defun where ()
   (loop with n-locations = (length *locations*)
@@ -547,16 +361,7 @@ namestrings.")
 		           (make-pathname :defaults (print *default-pathname-defaults*)
                                           :name :wild
                                           :type "system")))
-          #-(or :win32 :mswindows)
-          do
-	  #-(or :win32 :mswindows)
-          (let ((target (merge-pathnames
-                         (make-pathname :name (pathname-name sysfile)
-                                        :type (pathname-type sysfile))
-                         system)))
-            (when (probe-file target)
-              (unlink-file target))
-            (symlink-files sysfile target))
+          do (maybe-symlink-sysfile system sysfile)
 	  collect sysfile)))
 
 (defun temp-file-name (p)
@@ -661,25 +466,13 @@ namestrings.")
 
 (defun load-package (package)
   #+asdf
-  (asdf:operate 'asdf:load-op package))
-
-#+Old
-(defun load-system-definition (sysfile)
-  (declare (type pathname sysfile))
-  #+asdf
-  (when (or (string-equal "asd" (pathname-type sysfile))
-            (string-equal "asdf" (pathname-type sysfile)))
-    (installer-msg t "Loading system ~S via ASDF." (pathname-name sysfile))
-    ;; just load the system definition
-    (load sysfile)
-    #+Ignore
-    (asdf:operate 'asdf:load-op (pathname-name sysfile)))
-
+  (progn
+    (installer-msg t "Loading system ~S via ASDF." package)
+    (asdf:operate 'asdf:load-op package))
   #+mk-defsystem
-  (when (string-equal "system" (pathname-type sysfile))
-    (installer-msg t "Loading system ~S via MK:DEFSYSTEM." (pathname-name sysfile))
-    (mk:load-system (pathname-name sysfile))))
-
+  (progn
+    (installer-msg t "Loading system ~S via MK:DEFSYSTEM." package)
+    (mk:load-system package)))
 
 ;;; uninstall --
 

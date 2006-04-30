@@ -1,0 +1,86 @@
+;;; ---------------------------------------------------------------------------
+;;; To-do
+;;; ---------------------------------------------------------------------------
+
+- Use a condition instead
+  (error "ASDF-INSTALL: can't untar ~S." packagename)
+
+Which directory "systems" or "site-systems"
+
+#-:digitool
+(read-signature (data stream)
+                (read-sequence data stream))
+#+:digitool
+(read-signature (data stream)
+                (multiple-value-bind (reader arg)
+                                     (ccl:stream-reader stream)
+                  (let ((byte 0))
+                    (dotimes (i (length data))
+                      (unless (setf byte (funcall reader arg))
+                        (error 'download-error :url  (concatenate 'string url ".asc")
+                               :response 200))
+                      (setf (char data i) (code-char byte))))))
+
+#-(or :win32 :mswindows)
+(return-output-from-program *gnu-tar-program*
+                            (list "-C" (namestring (truename source))
+                                  "-xzvf" (namestring (truename packagename))))
+#+(or :win32 :mswindows)
+(return-output-from-program *cygwin-bash-program*
+                            (list "-l"
+                                  "-c"
+                                  (format nil "\"tar -C \\\"`cygpath '~A'`\\\" -xzvf \\\"`cygpath '~A'`\\\"\""
+                                          (namestring (truename source))
+                                          (namestring (truename packagename)))))
+
+#+(or :sbcl :alisp) (probe-file p)
+#-(or :sbcl :alisp) (and (/= (mismatch p "http://") 7)
+                         (probe-file p))
+
+
+- tests
+
+- new features
+-- force reinstallation of dependencies
+-- use places other than the CLiki for finding files 
+
+
+;;; ---------------------------------------------------------------------------
+
+;;; port
+
+;; pull in networking
+;; get-env-variable
+;; copy-stream
+;; make-stream-from-url
+;; make-stream-from-gpg-command
+;; make-temp-sig
+;; return-output-from-program
+;; unlink-file ==? delete-file
+;; symlink-files
+
+#+digitool
+;; system-namestring
+
+
+;;; split-sequence
+;;;; all we use is split-sequence-if
+
+package
+split-sequence
+split-sequence-if
+split-sequence-if-not
+partition
+partition-if
+partition-if-not
+
+
+
+;;; get this into asdf in general
+(eval-when (:load-toplevel :execute)
+  (let* ((*package* (find-package :asdf-install-customize))
+         (file (probe-file (merge-pathnames
+			    (make-pathname :name ".asdf-install")
+			    (truename (user-homedir-pathname)))))
+         )
+    (when file (load file))))

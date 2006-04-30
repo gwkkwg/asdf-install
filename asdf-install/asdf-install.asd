@@ -27,15 +27,23 @@
 (defsystem asdf-install
   #+:sbcl :depends-on
   #+:sbcl (sb-posix sb-bsd-sockets)
-  :version "0.3"
+  :version "0.4"
   :components ((:file "defpackage")
+               (:file "split-sequence" :depends-on ("defpackage"))
+               
+               (:file "port" :depends-on ("defpackage"))
                #+:sbcl
 	       (:exe-file "loader" :depends-on ("installer"))
-               (:file "split-sequence")
-               (:file "port" :depends-on ("defpackage"))
                #+:digitool
                (:file "digitool" :depends-on ("port"))
-	       (:file "installer" :depends-on ("port" "split-sequence" #+:digitool "digitool"))))
+               
+	       (:file "conditions" :depends-on ("defpackage"))
+               (:file "variables" :depends-on ("port"))
+	       (:file "installer"
+                      :depends-on ("port" "split-sequence" 
+                                   #+:digitool "digitool"
+                                   "conditions" "variables"))
+               (:file "deprecated" :depends-on ("installer"))))
 	       
 (defmethod perform :after ((o load-op) (c (eql (find-system :asdf-install))))
   (provide 'asdf-install))

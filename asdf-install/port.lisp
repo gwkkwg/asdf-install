@@ -15,8 +15,8 @@
 (defun get-env-var (name)
   #+:sbcl (sb-ext:posix-getenv name)
   #+:cmu (cdr (assoc (intern (substitute #\_ #\- name)
-                            :keyword)
-                    ext:*environment-list*))
+                             :keyword)
+                     ext:*environment-list*))
   #+:allegro (sys:getenv name)
   #+:lispworks (lw:environment-variable name)
   #+:clisp (ext:getenv name)
@@ -38,8 +38,8 @@
   (let ((truename (probe-file pathname)))
     (unless truename
       (setf truename
-              (translate-logical-pathname
-               (merge-pathnames pathname *default-pathname-defaults*))))
+            (translate-logical-pathname
+             (merge-pathnames pathname *default-pathname-defaults*))))
     (let ((directory (pathname-directory truename)))
       (flet ((string-or-nil (value) (when (stringp value) value))
              (absolute-p (directory) (eq (first directory) :absolute))
@@ -75,11 +75,11 @@
   (let ((buf (make-array *stream-buffer-size*
 			 :element-type (stream-element-type from))))
     (loop
-     (let ((pos #-(or :clisp :cmu) (read-sequence buf from)
-                #+:clisp (ext:read-byte-sequence buf from :no-hang nil)
-                #+:cmu (sys:read-n-bytes from buf 0 *stream-buffer-size* nil)))
-       (when (zerop pos) (return))
-       (write-sequence buf to :end pos)))))
+      (let ((pos #-(or :clisp :cmu) (read-sequence buf from)
+                 #+:clisp (ext:read-byte-sequence buf from :no-hang nil)
+                 #+:cmu (sys:read-n-bytes from buf 0 *stream-buffer-size* nil)))
+        (when (zerop pos) (return))
+        (write-sequence buf to :end pos)))))
 
 #+:digitool
 (defun copy-stream (from to)
@@ -100,8 +100,8 @@
 (defun make-stream-from-url (url)
   #+:sbcl
   (let ((s (make-instance 'sb-bsd-sockets:inet-socket
-                          :type :stream
-                          :protocol :tcp)))
+             :type :stream
+             :protocol :tcp)))
     (sb-bsd-sockets:socket-connect
      s (car (sb-bsd-sockets:host-ent-addresses
              (sb-bsd-sockets:get-host-by-name (url-host url))))
@@ -175,11 +175,11 @@
 #+(and :clisp (not (or :win32 :cygwin)))
 (defun make-stream-from-gpg-command (string file-name)
   (let ((stream
-          (ext:run-shell-command (format nil "echo '~A' | gpg --status-fd 1 --verify - ~A"
-                                         string
-                                         (namestring file-name))
-                           :output :stream
-                           :wait nil)))
+         (ext:run-shell-command (format nil "echo '~A' | gpg --status-fd 1 --verify - ~A"
+                                        string
+                                        (namestring file-name))
+                                :output :stream
+                                :wait nil)))
     stream))
 
 #+(and :clisp (or :win32 :cygwin))
@@ -193,18 +193,18 @@
 #+:allegro
 (defun make-stream-from-gpg-command (string file-name)
   (multiple-value-bind (in-stream out-stream)
-      (excl:run-shell-command
-       #-:mswindows
-       (concatenate 'vector
-                    #("gpg" "gpg" "--status-fd" "1" "--verify" "-")
-                    (make-sequence 'vector 1
-                                   :initial-element (namestring file-name)))
-       #+:mswindows
-       (format nil "gpg --status-fd 1 --verify - \"~A\"" (namestring file-name))
-       :input :stream
-       :output :stream
-       :separate-streams t
-       :wait nil)
+                       (excl:run-shell-command
+                        #-:mswindows
+                        (concatenate 'vector
+                                     #("gpg" "gpg" "--status-fd" "1" "--verify" "-")
+                                     (make-sequence 'vector 1
+                                                    :initial-element (namestring file-name)))
+                        #+:mswindows
+                        (format nil "gpg --status-fd 1 --verify - \"~A\"" (namestring file-name))
+                        :input :stream
+                        :output :stream
+                        :separate-streams t
+                        :wait nil)
     (write-string string in-stream)
     (finish-output in-stream)
     (close in-stream)
@@ -223,9 +223,9 @@
 #+:digitool
 (defun make-stream-from-gpg-command (string file-name)
   (make-instance 'popen-input-stream
-                 :command (format nil "echo '~A' | gpg --status-fd 1 --verify - '~A'"
-                                  string
-                                  (system-namestring file-name))))
+    :command (format nil "echo '~A' | gpg --status-fd 1 --verify - '~A'"
+                     string
+                     (system-namestring file-name))))
 
 #+:sbcl
 (defun return-output-from-program (program args)
@@ -259,8 +259,8 @@
   (with-output-to-string (out-stream)
     (unless (zerop (sys:call-system-showing-output
                     (format nil #-:win32 "~A~{ '~A'~}"
-                                #+:win32 "~A~{ ~A~}"
-                                program args)
+                            #+:win32 "~A~{ ~A~}"
+                            program args)
                     :prefix ""
                     :show-cmd nil
                     :output-stream out-stream))
@@ -270,10 +270,10 @@
 (defun return-output-from-program (program args)
   (with-output-to-string (out-stream)
     (let ((stream
-            (ext:run-program program
-                             :arguments args
-                             :output :stream
-                             :wait nil)))
+           (ext:run-program program
+                            :arguments args
+                            :output :stream
+                            :wait nil)))
       (loop for line = (read-line stream nil)
             while line
             do (write-line line out-stream)))))
@@ -282,10 +282,10 @@
 (defun return-output-from-program (program args)
   (with-output-to-string (out-stream)
     (let ((stream
-            (ext:run-shell-command
-             (format nil "~A~{ ~A~}" program args
-                     :output :stream
-                     :wait nil))))
+           (ext:run-shell-command
+            (format nil "~A~{ ~A~}" program args
+                    :output :stream
+                    :wait nil))))
       (loop for line = (ignore-errors (read-line stream nil))
             while line
             do (write-line line out-stream)))))
@@ -294,15 +294,15 @@
 (defun return-output-from-program (program args)
   (with-output-to-string (out-stream)
     (let ((stream
-            (excl:run-shell-command
-             #-:mswindows
-             (concatenate 'vector
-                          (list program)
-                          (cons program args))
-             #+:mswindows
-             (format nil "~A~{ ~A~}" program args)
-             :output :stream
-             :wait nil)))
+           (excl:run-shell-command
+            #-:mswindows
+            (concatenate 'vector
+                         (list program)
+                         (cons program args))
+            #+:mswindows
+            (format nil "~A~{ ~A~}" program args)
+            :output :stream
+            :wait nil)))
       (loop for line = (read-line stream nil)
             while line
             do (write-line line out-stream)))))
@@ -357,3 +357,54 @@
   (ccl::call-system (format nil "ln -s '~A' '~A'"
                             (system-namestring old)
                             (system-namestring new))))
+
+(defun maybe-symlink-sysfile (system sysfile)
+  (declare (ignorable system sysfile))
+  #-(or :win32 :mswindows)
+  (let ((target (merge-pathnames
+                 (make-pathname :name (pathname-name sysfile)
+                                :type (pathname-type sysfile))
+                 system)))
+    (when (probe-file target)
+      (unlink-file target))
+    (symlink-files sysfile target)))
+
+;;; ---------------------------------------------------------------------------
+;;; read-header-line
+;;; ---------------------------------------------------------------------------
+
+#-:digitool
+(defun read-header-line (stream)
+  (read-line stream))
+
+#+:digitool
+(defun read-header-line (stream &aux (line (make-array 16
+                                                       :element-type 'character
+                                                       :adjustable t
+                                                       :fill-pointer 0))
+                                (byte nil))
+  (print (multiple-value-bind (reader arg)
+                              (ccl::stream-reader stream)
+           (loop (setf byte (funcall reader arg))
+                 (case byte
+                   ((nil)
+                    (return))
+                   ((#.(char-code #\Return)
+                     #.(char-code #\Linefeed))
+                    (case (setf byte (funcall reader arg))
+                      ((nil #.(char-code #\Return) #.(char-code #\Linefeed)))
+                      (t (ccl:stream-untyi stream byte)))
+                    (return))
+                   (t
+                    (vector-push-extend (code-char byte) line))))
+           (when (or byte (plusp (length line)))
+             line))))
+
+;;; ---------------------------------------------------------------------------
+
+(defun open-file-arguments ()
+  (append 
+   #+sbcl
+   '(:external-format :latin1)
+   #+(or :clisp :digitool (and :lispworks :win32))
+   '(:element-type (unsigned-byte 8))))

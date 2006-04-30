@@ -69,29 +69,8 @@
       (unless (find-package "SPLIT-SEQUENCE")
         (load-and-or-compile "ASDF-INSTALL-LIBRARY:split-sequence.lisp"))
 
-      #|
-      ;; Implementation dependencies (in alphabetical order).
-      #+allegro
-      (load-and-or-compile "ASDF-INSTALL-LIBRARY:impl-dependent;allegro.lisp")
-
-      #+clisp
-      (load-and-or-compile "ASDF-INSTALL-LIBRARY:impl-dependent;clisp.lisp")
-
-      #+(or cmu sbcl) ; They are still very similar.
-      (load-and-or-compile "ASDF-INSTALL-LIBRARY:impl-dependent;cmucl.lisp")
-
-      #+digitool
-      (load-and-or-compile "ASDF-INSTALL-LIBRARY:digitool.lisp")
-
-      #+lcl
-      (load-and-or-compile "ASDF-INSTALL-LIBRARY:impl-dependent;lcl.lisp")
-
-      #+lispworks
-      (load-and-or-compile "ASDF-INSTALL-LIBRARY:impl-dependent;lispworks.lisp")
-      |#      
-
-
       (load-and-or-compile "ASDF-INSTALL-LIBRARY:installer.lisp")
+
       ;; (load-and-or-compile "ASDF-INSTALL-LIBRARY:loader.lisp")
 
       ))
