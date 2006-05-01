@@ -97,3 +97,8 @@ namestrings.")
                        *private-asdf-install-dirs*)
      "Personal installation")))
 
+(defvar *systems-installed-this-time* nil
+  "Used during installation propagation \(see *propagate-installation*\) to keep track off which systems have been installed during the current call to install.")
+
+(defvar *propagate-installation* nil
+  "If true, then every required system will be re-asdf-installed.")

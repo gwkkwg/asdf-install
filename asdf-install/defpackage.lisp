@@ -2,6 +2,7 @@
 
 (defpackage :asdf-install
   (:use #:common-lisp)
+  (:import-from #:asdf #:*defined-systems*)
   (:export
 
    ;; Customizable variables.

@@ -377,14 +377,22 @@
 ;;; install
 ;;; This is the external entry point.
 
-(defun install (&rest packages)
+(defun install (package &rest packages &key (propagate nil))
+  (remf packages :propagate)
   (let* ((*temporary-files* nil)
          (trusted-uid-file 
           (merge-pathnames "trusted-uids.lisp" *private-asdf-install-dirs*))
 	 (*trusted-uids*
           (when (probe-file trusted-uid-file)
             (with-open-file (f trusted-uid-file) (read f))))
-         (old-uids (copy-list *trusted-uids*)))
+         (old-uids (copy-list *trusted-uids*))
+         (*defined-systems* (if propagate 
+                              (make-hash-table :test 'equal)
+                              *defined-systems*))
+         (packages (append (list package) packages))
+         (*propagate-installation* propagate)
+         (*systems-installed-this-time* nil))
+            
     (unwind-protect
       (destructuring-bind (source system name) (where)
         (declare (ignore name))
@@ -441,10 +449,10 @@
                          (loop (multiple-value-bind (ret restart-p)
                                                     (with-simple-restart
                                                       (retry "Retry installation")
+                                                      (push package *systems-installed-this-time*)
                                                       (load-package package))
                                  (declare (ignore ret))
-                                 (unless restart-p (return))))
-                         )))))
+                                 (unless restart-p (return)))))))))
           (one-iter packages)))
       
       ;;; cleanup
@@ -528,5 +536,17 @@
         (dolist (file files)
           (when (probe-file file)
             (return-from sysdef-source-dir-search file)))))))
+
+(defmethod asdf:find-component :around ((module (eql nil)) name &optional version)
+  (declare (ignore version))
+  (when (or (not *propagate-installation*) 
+            (member name *systems-installed-this-time* 
+                    :test (lambda (a b)
+                            (flet ((ensure-string (x)
+                                     (etypecase x
+                                       (symbol (symbol-name x))
+                                       (string x))))
+                              (string-equal (ensure-string a) (ensure-string b))))))
+    (call-next-method)))
 
 ;;; end of file -- install.lisp --
