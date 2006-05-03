@@ -250,15 +250,15 @@
                          :key-user-name name :key-id id))
                       (t
                        (error "Boolean logic gone bad. Run for the hills"))))
-              (install-anyways (&rest rest)
-	                       :report "Don't check GPG signature for this package"
-                               (declare (ignore rest))
-	                       nil)
               (add-key (&rest rest)
                        :report "Add to package supplier list"
                        (declare (ignore rest))
                        (pushnew (list id name) *trusted-uids*))))
           (return-from verify t))
+        (install-anyways (&rest rest)
+	                       :report "Don't check GPG signature for this package"
+                               (declare (ignore rest))
+	                       (return-from verify t))
         (retry-gpg-check (&rest args)
                          :report "Retry GPG check \(e.g., after downloading the key\)"
                          (declare (ignore args))

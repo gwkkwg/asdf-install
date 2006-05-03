@@ -1,6 +1,6 @@
 (cl:in-package :cl-user)
 
-(defpackage :asdf-install
+(defpackage #:asdf-install
   (:use #:common-lisp)
   (:import-from #:asdf #:*defined-systems*)
   (:export
@@ -34,5 +34,5 @@
    #:*proxy-user*
    #:*proxy-passwd*))
 
-(defpackage :asdf-install-customize
+(defpackage #:asdf-install-customize
   (:use #:common-lisp #:asdf-install))
