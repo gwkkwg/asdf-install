@@ -549,4 +549,9 @@
                               (string-equal (ensure-string a) (ensure-string b))))))
     (call-next-method)))
 
+(defun show-version-information ()
+  (format *standard-output* "~&;;; ASDF-Install version ~A.~A.~A"
+          *major-version* *minor-version* *release-version*)
+  (values))
+
 ;;; end of file -- install.lisp --

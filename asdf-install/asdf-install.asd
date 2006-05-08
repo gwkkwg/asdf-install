@@ -42,10 +42,15 @@
 	       (:file "installer"
                       :depends-on ("port" "split-sequence" 
                                    #+:digitool "digitool"
-                                   "conditions" "variables"))
+                                   "conditions" "variables" "version"))
+               (:file "version" :depends-on ("defpackage"))
                (:file "deprecated" :depends-on ("installer"))))
 	       
 (defmethod perform :after ((o load-op) (c (eql (find-system :asdf-install))))
+  (let ((show-version (find-symbol
+                       (symbol-name '#:show-version-information) '#:asdf-install)))
+    (when (and show-version (fboundp show-version)) 
+      (funcall show-version)))
   (provide 'asdf-install))
 
 (defmethod perform ((o test-op) (c (eql (find-system :asdf-install))))
