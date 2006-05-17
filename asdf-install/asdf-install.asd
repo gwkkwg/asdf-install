@@ -4,6 +4,7 @@
   (:use #:cl #:asdf))
 
 (in-package #:asdf-install-system)
+
 #+:sbcl
 (require 'sb-executable)
 
@@ -27,7 +28,9 @@
 (defsystem asdf-install
   #+:sbcl :depends-on
   #+:sbcl (sb-posix sb-bsd-sockets)
-  :version "0.4"
+  
+  :version "0.5.2"
+  
   :components ((:file "defpackage")
                (:file "split-sequence" :depends-on ("defpackage"))
                
@@ -45,7 +48,9 @@
                                    "conditions" "variables" "version"))
                (:file "version" :depends-on ("defpackage"))
                (:file "deprecated" :depends-on ("installer"))))
-	       
+	   
+;;; ---------------------------------------------------------------------------
+
 (defmethod perform :after ((o load-op) (c (eql (find-system :asdf-install))))
   (let ((show-version (find-symbol
                        (symbol-name '#:show-version-information) '#:asdf-install)))
