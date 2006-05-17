@@ -54,7 +54,7 @@
       (:H3 "Where is it")
       (:P "SBCL (since 0.8.3) and OpenMCL (since 0.14.1) come with a version of ASDF-Install. You can get the latest version with this " (rw:link :asdf-install-package :title "gzipped tar file") ". There is also a darcs repository at:" 
           (:PRE
-           "darcs get http://common-lisp.net/project/cl-containers/asdf-install/darcs/asdf-install"))
+           "darcs get http://common-lisp.net/project/asdf-install/darcs/asdf-install"))
       
       (:P "Finally, you should be able to get the latest version using ASDF-Install itself (though you will probably need to edit your local configuration files in order to use this version.")
       
