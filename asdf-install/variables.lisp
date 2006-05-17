@@ -27,7 +27,8 @@ namestrings.")
 
 (defvar *trusted-uids* nil)
 
-(defvar *verify-gpg-signatures* t)
+(defvar *verify-gpg-signatures* t
+  "Can be t, nil, or :unknown-locations. If true, then the signature of all packages will be checked. If nil, then no signatures will be checked. If :unkown-locations, then only packages whose location is not a prefix of any `*safe-url-prefixes*` will be tested.")
 
 (defvar *safe-url-prefixes* nil)
 

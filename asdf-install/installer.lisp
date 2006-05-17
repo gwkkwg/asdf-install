@@ -58,15 +58,6 @@
   (setf *locations*
         (append *locations* (list (list site system-site loc-name)))))
 
-(eval-when (:load-toplevel :execute)
-  (let* ((*package* (find-package :asdf-install-customize))
-         (file (probe-file (merge-pathnames
-			    (make-pathname :name ".asdf-install")
-			    (truename (user-homedir-pathname)))))
-         )
-    (when file (load file))))
-
-
 ;;;---------------------------------------------------------------------------
 ;;; URL handling.
 
@@ -152,12 +143,14 @@
                                 (subseq line (1+ colon))))))
      stream)))
 
+(defun download-link-for-package (package-name-or-url)
+  (if (= (mismatch package-name-or-url "http://") 7)
+    package-name-or-url
+    (format nil "http://www.cliki.net/~A?download"
+            package-name-or-url)))
+
 (defun download-files-for-package (package-name-or-url file-name)
-  (let ((url (if (= (mismatch package-name-or-url "http://") 7)
-               package-name-or-url
-               (format nil "http://www.cliki.net/~A?download"
-                       package-name-or-url)))
-        )
+  (let ((url (download-link-for-package package-name-or-url)))
     (destructuring-bind (response headers stream)
 	                (block got
 	                  (loop
@@ -549,9 +542,19 @@
                               (string-equal (ensure-string a) (ensure-string b))))))
     (call-next-method)))
 
+
 (defun show-version-information ()
   (format *standard-output* "~&;;; ASDF-Install version ~A.~A.~A"
           *major-version* *minor-version* *release-version*)
   (values))
+
+;; load customizations
+(eval-when (:load-toplevel :execute)
+  (let* ((*package* (find-package :asdf-install-customize))
+         (file (probe-file (merge-pathnames
+			    (make-pathname :name ".asdf-install")
+			    (truename (user-homedir-pathname)))))
+         )
+    (when file (load file))))
 
 ;;; end of file -- install.lisp --
