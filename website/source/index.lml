@@ -32,25 +32,38 @@
      
      ((:DIV :CLASS "system-description")
       (:H3 "What it is")
+      (:P "ASDF-Install is Common Lisp's answer to CPAN: an internet-based, dependency-chasing, installation system. ASDF-Install was originally written for SBCL by Dan Barlow and then ported by Edi Weitz and many others. It knows how to work with systems defined by either  ASDF or MK-Defsystem.")
+      
       (:P "ASDF-Install is a tool for downloading and installing lisp packages. It: ")
       (:UL 
        (:LI "downloads lisp libraries (defined using either " (link :ASDF) " or " (link :mk-defsystem) ") and installs them in the local file system,")
        (:LI "chases sub-system dependencies, and ")
        (:LI "uses PGP signatures to verify the provenance of the downloaded code (requires " ((:A :HREF "http://www.gnupg.org/" :TITLE "GPG Link") "GPG") ") "))
       
-      (:P "The best source of information on ASDF-Install is probably its " (link :asdf-install :title "CLiki page") ". " ((:A :TITLE "Edi Weitz" :HREF "http://weitz.de/") "Edi Weitz") " wrote an excellent " ((:A :HREF "http://cvs.sourceforge.net/viewcvs.py/*checkout*/cclan/asdf-install/doc/index.html" :TITLE "ASDF Tutorial") "tutorial") " which is now maintained by " (link :homepage-gwking) ".")
+      (:P "The best source of information on ASDF-Install is probably its " (link :asdf-install :title "CLiki page") ". " ((:A :TITLE "Edi Weitz" :HREF "http://weitz.de/") "Edi Weitz") " wrote an excellent " ((:A :HREF "tutorial/index.html" :TITLE "ASDF-Install Tutorial") "tutorial") " which is now maintained by " (link :homepage-gwking) ".")
       
-      ((:A :HREF "mailing-lists"))
+      ((:A :id "mailing-lists"))
       (:h3 "Mailing Lists")
-      (:P "Questions regarding ASDF-install can be directed to the " ((:A :HREF "http://sourceforge.net/mail/?group_id=28536" :TITLE "CCLAN Mailing list link") "CCLAN mailing list") " or to " (link :mail-gwking) ".")
+      (:ul 
+       (:li ((:a :href "http://common-lisp.net/cgi-bin/mailman/listinfo/asdf-install-devel") "asdf-install-devel")
+            ": A list for questions, patches, bug reports, and so on; It's for everything.")
+       
+       (:li "You can also use the " ((:A :HREF "http://sourceforge.net/mail/?group_id=28536" :TITLE "CCLAN Mailing list link") "CCLAN mailing list")  "."))
       
       ((:A :HREF "downloads"))
       (:H3 "Where is it")
-      (:P "SBCL (since 0.8.3) and OpenMCL (since 0.14.1) come with a version of ASDF-Install. The source code is available on " ((:A :TITLE "CCLAN" :HREF "http://sourceforge.net/projects/cclan") "CCLAN") ". There is an unstable, bleeding edge version maintained in a " (link :darcs) " repository at:")
-      (:PRE
-       "darcs get http://common-lisp.net/project/cl-containers/asdf-install/darcs/asdf-install")
+      (:P "SBCL (since 0.8.3) and OpenMCL (since 0.14.1) come with a version of ASDF-Install. You can get the latest version with this " (rw:link :asdf-install-package :title "gzipped tar file") ". There is also a darcs repository at:" 
+          (:PRE
+           "darcs get http://common-lisp.net/project/cl-containers/asdf-install/darcs/asdf-install"))
       
-      (:P "Finally, you should be able to get the latest version using ASDF-Install itself (though you will probably need to edit your local configuration files in order to use this version.")))
+      (:P "Finally, you should be able to get the latest version using ASDF-Install itself (though you will probably need to edit your local configuration files in order to use this version.")
+      
+      ((:A :id "news"))
+      (:H3 "What is happening")
+      ((:TABLE :CLASS "system-news") 
+       (:tr
+        (:th "17 May 2006")
+        (:td "Moved from Source Forge to Common-Lisp.net")))))
     
     ((:DIV :CLASS "footer")
      (generate-button-row 
