@@ -32,7 +32,18 @@
 
    ;; proxy authentication
    #:*proxy-user*
-   #:*proxy-passwd*))
+   #:*proxy-passwd*
+   
+   ;; conditions
+   #:download-error
+   #:signature-error
+   #:gpg-error
+   #:gpg-shell-error
+   #:key-not-found
+   #:key-not-trusted
+   #:author-not-trusted
+   #:installation-abort
+   ))
 
 (defpackage #:asdf-install-customize
   (:use #:common-lisp #:asdf-install))
