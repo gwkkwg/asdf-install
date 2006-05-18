@@ -4,4 +4,4 @@
 
 (defparameter *minor-version* "5")
 
-(defparameter *release-version* "1")
+(defparameter *release-version* "2")
