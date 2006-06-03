@@ -17,18 +17,40 @@
 	*safe-url-prefixes*))
       (t t))))
 	  
+(defun same-central-registry-entry-p (a b)
+  (flet ((ensure-string (x)
+           (typecase x
+             (string x)
+             (pathname (namestring (translate-logical-pathname x))))))
+    (and (setf a (ensure-string a))
+         (setf b (ensure-string b)) 
+         (string-equal a b))))
 
-#+(and (not :sbcl) :asdf)
+#+(and ignore (not :sbcl) :asdf)
 (pushnew `(merge-pathnames ,(make-pathname :directory '(:relative "site-systems"))
                            ,*asdf-install-dirs*)
          asdf:*central-registry*
          :test #'equal)
 
-#+(and (not :sbcl) :asdf)
+#+(and ignore (not :sbcl) :asdf)
 (pushnew `(merge-pathnames ,(make-pathname :directory '(:relative "systems"))
                            ,*private-asdf-install-dirs*)
          asdf:*central-registry*
          :test #'equal)
+
+#+(and (not :sbcl) :asdf)
+(pushnew (namestring
+          (merge-pathnames (make-pathname :directory '(:relative "site-systems"))
+                           *asdf-install-dirs*))
+         asdf:*central-registry*
+         :test #'same-central-registry-entry-p)
+
+#+(and (not :sbcl) :asdf)
+(pushnew (namestring
+          (merge-pathnames (make-pathname :directory '(:relative "systems"))
+                           *private-asdf-install-dirs*))
+         asdf:*central-registry*
+         :test #'same-central-registry-entry-p)
 
 #+mk-defsystem
 (mk:add-registry-location
@@ -192,10 +214,6 @@
       (close stream)
       (terpri)
       (verify-gpg-signature/url url file-name))))
-
-(defun read-until-eof (stream)
-  (with-output-to-string (o)
-    (copy-stream stream o)))
   
 (defun verify-gpg-signature/string (string file-name)
   (block verify
@@ -318,23 +336,29 @@
 
 ;;; install-package --
 
+(defun tar-command ()
+  #-(or :win32 :mswindows)
+  *gnu-tar-program*
+  #+(or :win32 :mswindows)
+  *cygwin-bash-program*)
+
+(defun tar-arguments (source packagename)
+  #-(or :win32 :mswindows)
+  (list "-C" (namestring (truename source))
+	"-xzvf" (namestring (truename packagename)))
+  #+(or :win32 :mswindows)
+  (list "-l"
+	"-c"
+	(format nil "\"tar -C \\\"`cygpath '~A'`\\\" -xzvf \\\"`cygpath '~A'`\\\"\""
+		(namestring (truename source))
+		(namestring (truename packagename)))))
+
 (defun install-package (source system packagename)
   "Returns a list of system names (ASDF or MK:DEFSYSTEM) for installed systems."
   (ensure-directories-exist source)
   (ensure-directories-exist system)
-  (let* ((tar
-          (or #-(or :win32 :mswindows)
-              (return-output-from-program *gnu-tar-program*
-                                          (list "-C" (namestring (truename source))
-                                                "-xzvf" (namestring (truename packagename))))
-              #+(or :win32 :mswindows)
-              (return-output-from-program *cygwin-bash-program*
-                                          (list "-l"
-                                                "-c"
-                                                (format nil "\"tar -C \\\"`cygpath '~A'`\\\" -xzvf \\\"`cygpath '~A'`\\\"\""
-                                                        (namestring (truename source))
-                                                        (namestring (truename packagename)))))
-              (error "ASDF-INSTALL: can't untar ~S." packagename)))
+  (let* ((tar (return-output-from-program (tar-command)
+					  (tar-arguments source packagename)))
 	 (pos-slash (or (position #\/ tar)
                         (position #\Return tar)
                         (position #\Linefeed tar)))
@@ -342,19 +366,19 @@
 	  (merge-pathnames
 	   (make-pathname :directory
 			  `(:relative ,(subseq tar 0 pos-slash)))
-	   source))
-         )
+	   source)))
     (princ tar)
     (loop for sysfile in (append
                           (directory
-		           (make-pathname :defaults (print *default-pathname-defaults*)
+		           (make-pathname :defaults *default-pathname-defaults*
                                           :name :wild
                                           :type "asd"))
                           (directory
-		           (make-pathname :defaults (print *default-pathname-defaults*)
+		           (make-pathname :defaults *default-pathname-defaults*
                                           :name :wild
                                           :type "system")))
           do (maybe-symlink-sysfile system sysfile)
+	  do (installer-msg t "Found system definition: ~A" sysfile)
 	  collect sysfile)))
 
 (defun temp-file-name (p)
@@ -542,11 +566,14 @@
                               (string-equal (ensure-string a) (ensure-string b))))))
     (call-next-method)))
 
-
 (defun show-version-information ()
-  (format *standard-output* "~&;;; ASDF-Install version ~A.~A.~A"
-          *major-version* *minor-version* *release-version*)
-  (values))
+  (let ((system (asdf:find-system 'asdf-install)))
+    (if system
+      (format *standard-output* "~&;;; ASDF-Install version ~A"
+              (asdf:component-version system))
+      (format *standard-output* "~&;;; ASDF-Install version unknown; unable to find ASDF system definition."
+              (asdf:component-version system)))
+  (values)))
 
 ;; load customizations
 (eval-when (:load-toplevel :execute)
