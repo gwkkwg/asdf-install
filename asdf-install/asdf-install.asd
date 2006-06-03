@@ -29,7 +29,7 @@
   #+:sbcl :depends-on
   #+:sbcl (sb-posix sb-bsd-sockets)
   
-  :version "0.5.2"
+  :version "0.5.3"
   
   :components ((:file "defpackage")
                (:file "split-sequence" :depends-on ("defpackage"))
@@ -45,8 +45,7 @@
 	       (:file "installer"
                       :depends-on ("port" "split-sequence" 
                                    #+:digitool "digitool"
-                                   "conditions" "variables" "version"))
-               (:file "version" :depends-on ("defpackage"))
+                                   "conditions" "variables"))
                (:file "deprecated" :depends-on ("installer"))))
 	   
 ;;; ---------------------------------------------------------------------------
