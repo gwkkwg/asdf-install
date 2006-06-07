@@ -1,9 +1,9 @@
 (in-package asdf-install)
 
-#+sbcl ; Deprecated.
+#+(and ignore sbcl) ; Deprecated.
 (define-symbol-macro *sbcl-home* *asdf-install-dirs*)
 
-#+sbcl ; Deprecated.
+#+(and ignore sbcl) ; Deprecated.
 (define-symbol-macro *dot-sbcl* *private-asdf-install-dirs*)
 
 ;; uncalled
