@@ -394,8 +394,7 @@
 ;;; install
 ;;; This is the external entry point.
 
-(defun install (package &rest packages &key (propagate nil))
-  (remf packages :propagate)
+(defun install (packages &key (propagate nil))
   (let* ((*temporary-files* nil)
          (trusted-uid-file 
           (merge-pathnames "trusted-uids.lisp" *private-asdf-install-dirs*))
@@ -406,7 +405,7 @@
          (*defined-systems* (if propagate 
                               (make-hash-table :test 'equal)
                               *defined-systems*))
-         (packages (append (list package) packages))
+         (packages (if (atom packages) (list packages) packages))
          (*propagate-installation* propagate)
          (*systems-installed-this-time* nil))
             
