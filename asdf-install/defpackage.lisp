@@ -2,6 +2,8 @@
 
 (defpackage #:asdf-install
   (:use #:common-lisp)
+  
+  #+asdf
   (:import-from #:asdf #:*defined-systems*)
   (:export
 
@@ -16,20 +18,17 @@
    #:*locations*
    #:*safe-url-prefixes*
    #:*preferred-location*
-
-   #+(or :win32 :mswindows)
-   #:*cygwin-bin-directory*
-
-   #+(or :win32 :mswindows)
-   #:*cygwin-bash-command*
-
+   
+   
    ;; External entry points.   
    #:add-locations
-   #+(and asdf (or :win32 :mswindows))
-   #:sysdef-source-dir-search
+   #:add-registry-location
    #:uninstall
    #:install
 
+   #+(and asdf (or :win32 :mswindows))
+   #:sysdef-source-dir-search   
+   
    ;; proxy authentication
    #:*proxy-user*
    #:*proxy-passwd*
@@ -43,7 +42,12 @@
    #:key-not-trusted
    #:author-not-trusted
    #:installation-abort
-   ))
+   )
+  
+  #+(or :win32 :mswindows)
+  (:export
+   #:*cygwin-bin-directory*
+   #:*cygwin-bash-command*))
 
 (defpackage #:asdf-install-customize
   (:use #:common-lisp #:asdf-install))
