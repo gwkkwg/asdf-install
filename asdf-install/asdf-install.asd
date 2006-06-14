@@ -29,7 +29,7 @@
   #+:sbcl :depends-on
   #+:sbcl (sb-posix sb-bsd-sockets)
   
-  :version "0.5.4"
+  :version "0.5.5"
   
   :components ((:file "defpackage")
                (:file "split-sequence" :depends-on ("defpackage"))
