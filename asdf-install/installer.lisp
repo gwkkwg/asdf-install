@@ -21,47 +21,30 @@
   (flet ((ensure-string (x)
            (typecase x
              (string x)
-             (pathname (namestring (translate-logical-pathname x))))))
+             (pathname (namestring (translate-logical-pathname x)))
+             (t nil))))
     (and (setf a (ensure-string a))
-         (setf b (ensure-string b)) 
-         (string-equal a b))))
+         (setf b (ensure-string b))
+         a b (string-equal a b))))
 
-#+(and ignore (not :sbcl) :asdf)
-(pushnew `(merge-pathnames ,(make-pathname :directory '(:relative "site-systems"))
-                           ,*asdf-install-dirs*)
-         asdf:*central-registry*
-         :test #'equal)
+(defun add-registry-location (location)
+  #+asdf
+  (pushnew location
+           asdf:*central-registry*
+           :test #'same-central-registry-entry-p)
+  
+  #+mk-defsystem
+  (mk:add-registry-location location))
 
-#+(and ignore (not :sbcl) :asdf)
-(pushnew `(merge-pathnames ,(make-pathname :directory '(:relative "systems"))
-                           ,*private-asdf-install-dirs*)
-         asdf:*central-registry*
-         :test #'equal)
-
-#+(and (not :sbcl) :asdf)
-(pushnew (namestring
-          (merge-pathnames (make-pathname :directory '(:relative "site-systems"))
-                           *asdf-install-dirs*))
-         asdf:*central-registry*
-         :test #'same-central-registry-entry-p)
-
-#+(and (not :sbcl) :asdf)
-(pushnew (namestring
-          (merge-pathnames (make-pathname :directory '(:relative "systems"))
-                           *private-asdf-install-dirs*))
-         asdf:*central-registry*
-         :test #'same-central-registry-entry-p)
-
-#+mk-defsystem
-(mk:add-registry-location
+#+(and (not :sbcl))
+(add-registry-location 
  (merge-pathnames (make-pathname :directory '(:relative "site-systems"))
-                  *private-asdf-install-dirs*))
+                  *asdf-install-dirs*))
 
-#+mk-defsystem
-(mk:add-registry-location
+#+(and (not :sbcl))
+(add-registry-location 
  (merge-pathnames (make-pathname :directory '(:relative "systems"))
                   *private-asdf-install-dirs*))
-
 
 ;;; Fixing the handling of *LOCATIONS*
 
@@ -266,6 +249,7 @@
                        (declare (ignore rest))
                        (pushnew (list id name) *trusted-uids*))))
           (return-from verify t))
+        #+Ignore
         (install-anyways (&rest rest)
 	                       :report "Don't check GPG signature for this package"
                                (declare (ignore rest))
@@ -276,33 +260,44 @@
                          nil)))))
 
 (defun verify-gpg-signature/url (url file-name)
-  (when (verify-gpg-signatures-p url)
-    (let ((sig-url (concatenate 'string url ".asc")))
-      (destructuring-bind (response headers stream)
-                          (url-connection sig-url)
-        (unwind-protect
-          (flet (#-:digitool
-                 (read-signature (data stream)
-                   (read-sequence data stream))
-                 #+:digitool
-                 (read-signature (data stream)
-                   (multiple-value-bind (reader arg)
-                                        (ccl:stream-reader stream)
-                     (let ((byte 0))
-                       (dotimes (i (length data))
-                         (unless (setf byte (funcall reader arg))
-                           (error 'download-error :url sig-url
-                                  :response 200))
-                         (setf (char data i) (code-char byte)))))))
-            (if (= response 200)
-              (let ((data (make-string (parse-integer
-                                        (header-value :content-length headers)
-                                        :junk-allowed t))))
-                (read-signature data stream)
-                (verify-gpg-signature/string data file-name))
-              (error 'download-error :url sig-url
-                     :response response)))
-          (close stream))))))
+  (block verify
+    (loop
+      (restart-case
+        (when (verify-gpg-signatures-p url)
+          (let ((sig-url (concatenate 'string url ".asc")))
+            (destructuring-bind (response headers stream)
+                                (url-connection sig-url)
+              (unwind-protect
+                (flet (#-:digitool
+                       (read-signature (data stream)
+                         (read-sequence data stream))
+                       #+:digitool
+                       (read-signature (data stream)
+                         (multiple-value-bind (reader arg)
+                                              (ccl:stream-reader stream)
+                           (let ((byte 0))
+                             (dotimes (i (length data))
+                               (unless (setf byte (funcall reader arg))
+                                 (error 'download-error :url sig-url
+                                        :response 200))
+                               (setf (char data i) (code-char byte)))))))
+                  (if (= response 200)
+                    (let ((data (make-string (parse-integer
+                                              (header-value :content-length headers)
+                                              :junk-allowed t))))
+                      (read-signature data stream)
+                      (verify-gpg-signature/string data file-name))
+                    (error 'download-error :url sig-url
+                           :response response)))
+                (close stream)))))
+        (install-anyways (&rest rest)
+                         :report "Don't check GPG signature for this package"
+                         (declare (ignore rest))
+                         (return-from verify t))
+        (retry-gpg-check (&rest args)
+                         :report "Retry GPG check \(e.g., after fixing the network connection\)"
+                         (declare (ignore args))
+                         nil)))))
 
 (defun header-value (name headers)
   "Searchers headers for name _without_ case sensitivity. Headers should be an alist mapping symbols to values; name a symbol. Returns the value if name is found or nil if it is not."
@@ -402,9 +397,12 @@
           (when (probe-file trusted-uid-file)
             (with-open-file (f trusted-uid-file) (read f))))
          (old-uids (copy-list *trusted-uids*))
+         
+         #+asdf
          (*defined-systems* (if propagate 
                               (make-hash-table :test 'equal)
                               *defined-systems*))
+         
          (packages (if (atom packages) (list packages) packages))
          (*propagate-installation* propagate)
          (*systems-installed-this-time* nil))
