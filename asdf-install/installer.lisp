@@ -348,12 +348,25 @@
 		(namestring (truename source))
 		(namestring (truename packagename)))))
 
+(defun extract-using-tar (to-dir tarball)
+  (if (probe-file (tar-command))
+      (return-output-from-program (tar-command)
+                                  (tar-arguments to-dir tarball))
+      (warn "Cannot find tar command ~S." (tar-command))))
+
+(defvar *tar-extractors*
+  '(extract-using-tar))
+
+(defun extract (to-dir tarball)
+  (or (some #'(lambda (extractor) (funcall extractor to-dir tarball))
+            *tar-extractors*)
+      (error "Unable to extract tarball ~A." tarball)))
+
 (defun install-package (source system packagename)
   "Returns a list of system names (ASDF or MK:DEFSYSTEM) for installed systems."
   (ensure-directories-exist source)
   (ensure-directories-exist system)
-  (let* ((tar (return-output-from-program (tar-command)
-					  (tar-arguments source packagename)))
+  (let* ((tar (extract source packagename))
 	 (pos-slash (or (position #\/ tar)
                         (position #\Return tar)
                         (position #\Linefeed tar)))
