@@ -289,7 +289,8 @@
                       (verify-gpg-signature/string data file-name))
                     (error 'download-error :url sig-url
                            :response response)))
-                (close stream)))))
+                (close stream)
+                (return-from verify t)))))
         (install-anyways (&rest rest)
                          :report "Don't check GPG signature for this package"
                          (declare (ignore rest))
