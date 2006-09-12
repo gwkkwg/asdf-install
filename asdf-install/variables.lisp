@@ -98,6 +98,9 @@ namestrings.")
                        *private-asdf-install-dirs*)
      "Personal installation")))
 
+(defvar *tar-extractors*
+  '(extract-using-tar))
+
 (defvar *systems-installed-this-time* nil
   "Used during installation propagation \(see *propagate-installation*\) to keep track off which systems have been installed during the current call to install.")
 
