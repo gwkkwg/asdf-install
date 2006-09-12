@@ -31,9 +31,14 @@ in the path."))))
 (define-condition key-not-found (gpg-error)
   ((key-id :initarg :key-id :reader key-id))
   (:report (lambda (c s)
-	     (format s "No key found for key id 0x~A. ~
+	     (let* ((*print-circle* nil)
+		    (key-id (key-id c))
+		    (key-id (if (and (consp key-id) 
+				     (> (length key-id) 1))
+				(car key-id) key-id)))
+	       (format s "No key found for key id 0x~A. ~
                         Try some command like ~%  gpg  --recv-keys 0x~A"
-		     (key-id c) (key-id c)))))
+		       (key-id c) (key-id c))))))
 
 (define-condition key-not-trusted (gpg-error)
   ((key-id :initarg :key-id :reader key-id)
@@ -54,3 +59,24 @@ in the path."))))
   (:report (lambda (c s)
              (declare (ignore c))
              (installer-msg s "Installation aborted."))))
+
+(defun report-valid-preferred-locations (stream &optional attempted-location)
+  (when attempted-location
+    (installer-msg stream "~s is not a valid value for *preferred-location*"
+		   attempted-location))
+  (installer-msg stream "*preferred-location* may either be nil, a number between 1 and ~d \(the length of *locations*\) or the name of one of the *locations* \(~{~s~^, ~}\). If using a name, then it can be a symbol tested with #'eq or a string tested with #'string-equal."
+		 (length *locations*)
+		 (mapcar #'third *locations*)))
+
+(define-condition invalid-preferred-location-error (error)
+  ((preferred-location :initarg :preferred-location))
+  (:report (lambda (c s)
+	     (report-valid-preferred-locations 
+	      s (slot-value c 'preferred-location)))))
+
+(define-condition invalid-preferred-location-number-error 
+    (invalid-preferred-location-error) ())
+
+(define-condition invalid-preferred-location-name-error 
+    (invalid-preferred-location-error) ())
+
