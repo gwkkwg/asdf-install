@@ -3,7 +3,7 @@
 (pushnew :asdf-install *features*)
 
 (defun installer-msg (stream format-control &rest format-arguments)
-  (apply #'format stream ";;; ASDF-INSTALL: ~@?~%" format-control format-arguments))
+  (apply #'format stream "~&;;; ASDF-INSTALL: ~@?~%" format-control format-arguments))
 
 (defun verify-gpg-signatures-p (url)
   (labels ((prefixp (prefix string)
@@ -118,6 +118,7 @@
   (if *proxy*
       url
       (let ((path-start (position #\/ url :start 7)))
+	(assert (and path-start) nil "url does not specify a file.")
         (subseq url path-start))))
 
 (defun url-connection (url)
@@ -154,149 +155,61 @@
     (format nil "http://www.cliki.net/~A?download"
             package-name-or-url)))
 
-(defun download-files-for-package (package-name-or-url file-name)
-  (let ((url (download-link-for-package package-name-or-url)))
-    (destructuring-bind (response headers stream)
-	                (block got
-	                  (loop
-	                    (destructuring-bind (response headers stream) (url-connection url)
-	                      (unless (member response '(301 302))	       
-	                        (return-from got (list response headers stream)))
-	                      (close stream)
-	                      (setf url (header-value :location headers)))))
-      (when (>= response 400)
-        (error 'download-error :url url :response response))
-      (let ((length (parse-integer (or (header-value :content-length headers) "")
-		                   :junk-allowed t)))
-	(installer-msg t "Downloading ~A bytes from ~A to ~A ..."
-		       (or length "some unknown number of")
-                       url
-                       file-name)
-	(force-output)
-        #+:clisp (setf (stream-element-type stream)
-                       '(unsigned-byte 8))
-        (let ((ok? nil) (o nil))
-          (unwind-protect
-            (progn
-              (setf o (apply #'open file-name 
-                             :direction :output :if-exists :supersede
-                             (open-file-arguments)))
-              #+(or :cmu :digitool)
-              (copy-stream stream o)
-              #-(or :cmu :digitool)
-	      (if length
-                (let ((buf (make-array length
-                                       :element-type
-                                       (stream-element-type stream))))
-                  #-:clisp (read-sequence buf stream)
-                  #+:clisp (ext:read-byte-sequence buf stream :no-hang nil)
-                  (write-sequence buf o))
-                (copy-stream stream o))
-              (setf ok? t))
-            (when o (close o :abort (null ok?))))))
-      (close stream)
-      (terpri)
-      (verify-gpg-signature/url url file-name))))
+(defun download-link-for-signature (url)
+  (concatenate 'string url ".asc"))
+
+(defun download-files-for-package (package-name-or-url)
+  (multiple-value-bind (package-url package-file) 
+      (download-url-to-temporary-file
+       (download-link-for-package package-name-or-url))
+    (multiple-value-bind (signature-url signature-file) 
+	(download-url-to-temporary-file
+	 (download-link-for-signature package-url))
+      (values 
+       package-file signature-file))))
   
-(defun verify-gpg-signature/string (string file-name)
+(defun verify-gpg-signature (file-name signature-name)
   (block verify
     (loop
       (restart-case
-        (let ((gpg-stream (make-stream-from-gpg-command string file-name))
-              tags)
-          (unwind-protect
-            (loop for l = (read-line gpg-stream nil nil)
-                  while l
-                  do (print l)
-                  when (> (mismatch l "[GNUPG:]") 6)
-                  do (destructuring-bind (_ tag &rest data)
-                                         (split-sequence-if (lambda (x)
-                                                              (find x '(#\Space #\Tab)))
-                                                            l)
-	               (declare (ignore _))
-                       (pushnew (cons (intern (string-upcase tag) :keyword)
-			              data) tags)))
-            (ignore-errors
-             (close gpg-stream)))
-          ;; test that command returned something 
-          (unless tags
-            (error 'gpg-shell-error))
-          ;; test for obvious key/sig problems
-          (let ((errsig (header-value :errsig tags)))
-            (and errsig (error 'key-not-found :key-id errsig)))
-          (let ((badsig (header-value :badsig tags)))
-            (and badsig (error 'key-not-found :key-id badsig)))
-          (let* ((good (header-value :goodsig tags))
-	         (id (first good))
-	         (name (format nil "~{~A~^ ~}" (rest good))))
-            ;; good signature, but perhaps not trusted
-            (restart-case
-              (let ((trusted? (or (header-pair :trust_ultimate tags)
-                                  (header-pair :trust_fully tags)))
-                    (in-list? (assoc id *trusted-uids* :test #'equal)))
-                (cond ((or trusted? in-list?)
-                       ;; ok
-                       )
-                      ((not trusted?)
-                       (error 'key-not-trusted :key-user-name name :key-id id))
-                      ((not in-list?)
-                       (error 'author-not-trusted
-                         :key-user-name name :key-id id))
-                      (t
-                       (error "Boolean logic gone bad. Run for the hills"))))
-              (add-key (&rest rest)
-                       :report "Add to package supplier list"
-                       (declare (ignore rest))
-                       (pushnew (list id name) *trusted-uids*))))
-          (return-from verify t))
-        #+Ignore
+	  (let ((tags (gpg-results file-name signature-name)))
+	    ;; test that command returned something 
+	    (unless tags
+	      (error 'gpg-shell-error))
+	    ;; test for obvious key/sig problems
+	    (let ((errsig (header-value :errsig tags)))
+	      (and errsig (error 'key-not-found :key-id errsig)))
+	    (let ((badsig (header-value :badsig tags)))
+	      (and badsig (error 'key-not-found :key-id badsig)))
+	    (let* ((good (header-value :goodsig tags))
+		   (id (first good))
+		   (name (format nil "~{~A~^ ~}" (rest good))))
+	      ;; good signature, but perhaps not trusted
+	      (restart-case
+		  (let ((trusted? (or (header-pair :trust_ultimate tags)
+				      (header-pair :trust_fully tags)))
+			(in-list? (assoc id *trusted-uids* :test #'equal)))
+		    (cond ((or trusted? in-list?)
+			   ;; ok
+			   )
+			  ((not trusted?)
+			   (error 'key-not-trusted :key-user-name name :key-id id))
+			  ((not in-list?)
+			   (error 'author-not-trusted
+				  :key-user-name name :key-id id))
+			  (t
+			   (error "Boolean logic gone bad. Run for the hills"))))
+		(add-key (&rest rest)
+		  :report "Add to package supplier list"
+		  (declare (ignore rest))
+		  (pushnew (list id name) *trusted-uids*))))
+	    (return-from verify t))
         (install-anyways (&rest rest)
 	                       :report "Don't check GPG signature for this package"
                                (declare (ignore rest))
 	                       (return-from verify t))
         (retry-gpg-check (&rest args)
                          :report "Retry GPG check \(e.g., after downloading the key\)"
-                         (declare (ignore args))
-                         nil)))))
-
-(defun verify-gpg-signature/url (url file-name)
-  (block verify
-    (loop
-      (restart-case
-        (when (verify-gpg-signatures-p url)
-          (let ((sig-url (concatenate 'string url ".asc")))
-            (destructuring-bind (response headers stream)
-                                (url-connection sig-url)
-              (unwind-protect
-                (flet (#-:digitool
-                       (read-signature (data stream)
-                         (read-sequence data stream))
-                       #+:digitool
-                       (read-signature (data stream)
-                         (multiple-value-bind (reader arg)
-                                              (ccl:stream-reader stream)
-                           (let ((byte 0))
-                             (dotimes (i (length data))
-                               (unless (setf byte (funcall reader arg))
-                                 (error 'download-error :url sig-url
-                                        :response 200))
-                               (setf (char data i) (code-char byte)))))))
-                  (if (= response 200)
-                    (let ((data (make-string (parse-integer
-                                              (header-value :content-length headers)
-                                              :junk-allowed t))))
-                      (read-signature data stream)
-                      (verify-gpg-signature/string data file-name))
-                    (error 'download-error :url sig-url
-                           :response response)))
-                (close stream)
-                (return-from verify t)))))
-        (install-anyways (&rest rest)
-                         :report "Don't check GPG signature for this package"
-                         (declare (ignore rest))
-                         (return-from verify t))
-        (retry-gpg-check (&rest args)
-                         :report "Retry GPG check \(e.g., after fixing the network connection\)"
                          (declare (ignore args))
                          nil)))))
 
@@ -310,31 +223,72 @@
          :test (lambda (a b) 
                  (string-equal (symbol-name a) (symbol-name b)))))
 
-(defun where ()
+(defun validate-preferred-location ()
+  (typecase *preferred-location*
+    (null t)
+    ((integer 0) 
+     (assert (<= 1 *preferred-location* (length *locations*)) 
+	     (*preferred-location*)
+	     'invalid-preferred-location-number-error
+	     :preferred-location *preferred-location*))
+    ((or symbol string) 
+     (assert (find *preferred-location* *locations* 
+		   :test (if (typep *preferred-location* 'symbol)
+			     #'eq #'string-equal) :key #'third)
+	     (*preferred-location*)
+	     'invalid-preferred-location-name-error 
+	     :preferred-location *preferred-location*))
+    (t
+     (assert nil 
+	     (*preferred-location*)
+	     'invalid-preferred-location-error 
+	     :preferred-location *preferred-location*)))
+  *preferred-location*)
+
+(defun select-location ()
   (loop with n-locations = (length *locations*)
-        for response = (or *preferred-location*             
-                           (progn
-                             (format t "Install where?~%")
-                             (loop for (source system name) in *locations*
-                                   for i from 0
-                                   do (format t "~A) ~A: ~%   System in ~A~%   Files in ~A ~%"
-                                              i name system source))
-                             (format t "~D) Abort installation.~% --> " n-locations)
-                             (force-output)
-                             (read)))
-        when (and (numberp response)
-                  (<= 0 response (1- n-locations)))
-           return (elt *locations* response)
-        when (and (numberp response)
-                  (= response n-locations))
-           do (abort (make-condition 'installation-abort))))
+     for response = (progn
+		      (format t "Install where?~%")
+		      (loop for (source system name) in *locations*
+			 for i from 1
+			 do (format t "~A) ~A: ~%   System in ~A~%   Files in ~A ~%"
+				    i name system source))
+		      (format t "0) Abort installation.~% --> ")
+		      (force-output)
+		      (read))
+     when (and (numberp response)
+	       (<= 1 response n-locations))
+     return response
+     when (and (numberp response)
+	       (zerop response))
+     do (abort (make-condition 'installation-abort))))
+
+(defun install-location ()
+  (validate-preferred-location)
+  (let ((location-selection (or *preferred-location*
+				(select-location))))
+    (etypecase location-selection
+      (integer 
+       (elt *locations* (1- location-selection)))
+      ((or symbol string)
+       (find location-selection *locations* :key #'third
+	     :test (if (typep location-selection 'string) 
+		      #'string-equal #'eq))))))
 
 
 ;;; install-package --
 
 (defun tar-command ()
   #-(or :win32 :mswindows)
-  *gnu-tar-program*
+  (let ((tar-command (pathname-name *gnu-tar-program*)))
+    (flet ((find-bin (directory)
+	     (let ((bin (make-pathname :name tar-command
+				       :type nil
+				       :directory directory)))
+	       (when (probe-file bin)
+		 (namestring bin)))))
+      (or (find-bin nil)
+	  (find-bin "/usr/bin/"))))
   #+(or :win32 :mswindows)
   *cygwin-bash-program*)
 
@@ -350,13 +304,11 @@
 		(namestring (truename packagename)))))
 
 (defun extract-using-tar (to-dir tarball)
-  (if (probe-file (tar-command))
-      (return-output-from-program (tar-command)
-                                  (tar-arguments to-dir tarball))
-      (warn "Cannot find tar command ~S." (tar-command))))
-
-(defvar *tar-extractors*
-  '(extract-using-tar))
+  (let ((tar-command (tar-command)))
+    (if (and tar-command (probe-file tar-command))
+	(return-output-from-program tar-command
+				    (tar-arguments to-dir tarball))
+	(warn "Cannot find tar command ~S." tar-command))))
 
 (defun extract (to-dir tarball)
   (or (some #'(lambda (extractor) (funcall extractor to-dir tarball))
@@ -403,86 +355,82 @@
 ;;; install
 ;;; This is the external entry point.
 
-(defun install (packages &key (propagate nil))
-  (let* ((*temporary-files* nil)
+(defun install (packages &key (propagate nil) (where *preferred-location*))
+  (let* ((*preferred-location* where)
+	 (*temporary-files* nil)
          (trusted-uid-file 
           (merge-pathnames "trusted-uids.lisp" *private-asdf-install-dirs*))
 	 (*trusted-uids*
           (when (probe-file trusted-uid-file)
             (with-open-file (f trusted-uid-file) (read f))))
          (old-uids (copy-list *trusted-uids*))
-         
          #+asdf
          (*defined-systems* (if propagate 
                               (make-hash-table :test 'equal)
                               *defined-systems*))
-         
          (packages (if (atom packages) (list packages) packages))
          (*propagate-installation* propagate)
          (*systems-installed-this-time* nil))
-            
     (unwind-protect
-      (destructuring-bind (source system name) (where)
+      (destructuring-bind (source system name) (install-location)
         (declare (ignore name))
-        (labels ((one-iter (packages)
-                   (let ((installed-package-sysfiles
-                          (loop for p in (mapcar #'string packages)
-                                unless
-                                #+(or :sbcl :alisp) (probe-file p)
-                                #-(or :sbcl :alisp) (and (/= (mismatch p "http://") 7)
-                                                         (probe-file p))
-                                do (let ((tmp (temp-file-name p)))
-                                     (pushnew tmp *temporary-files*)
-                                     (download-files-for-package p tmp)
-                                     (setf p tmp))
-                                end
-                                do (installer-msg t "Installing ~A in ~A, ~A"
-                                                  p source system)
-                                append (install-package source system p)))
-                         )
-                     (declare (ignore installed-package-sysfiles))
-                     (dolist
-                       ;; 20 Mar 2006
-                       ;; only install the packages we asked for
-                       (package packages) 
-                       #+old-asdf-behavior
-                       ;; install every package we downloaded
-                       (sysfile installed-package-sysfiles)
-                       (handler-bind
-                         (
-                          #+asdf
-                          (asdf:missing-dependency
-                           (lambda (c) 
-                             (installer-msg t
-                                            "Downloading package ~A, required by ~A~%"
-                                            (asdf::missing-requires c)
-                                            (asdf:component-name
-                                             (asdf::missing-required-by c)))
-                             (one-iter (list
-                                        (asdf::coerce-name
-                                         (asdf::missing-requires c))))
-                             (invoke-restart 'retry)))
-                          
-                          #+mk-defsystem
-                          (make:missing-component
-                           (lambda (c) 
-                             (installer-msg t
-                                            "Downloading package ~A, required by ~A~%"
-                                            (make:missing-component-name c)
-                                            package
-                                            )
-                             (one-iter (list (make:missing-component-name c)))
-                             (invoke-restart 'retry))))
-                         
-                         (loop (multiple-value-bind (ret restart-p)
-                                                    (with-simple-restart
-                                                      (retry "Retry installation")
-                                                      (push package *systems-installed-this-time*)
-                                                      (load-package package))
-                                 (declare (ignore ret))
-                                 (unless restart-p (return)))))))))
-          (one-iter packages)))
-      
+        (labels 
+	    ((one-iter (packages)
+	       (let ((installed-package-sysfiles
+		      (loop for p in (mapcar #'string packages)
+			 unless
+			 #+(or :sbcl :alisp) (probe-file p)
+			 #-(or :sbcl :alisp) (and (/= (mismatch p "http://") 7)
+						  (probe-file p))
+			 do (multiple-value-bind (package signature)
+				(download-files-for-package p)
+			      (when (verify-gpg-signatures-p p)
+				(verify-gpg-signature package signature))
+			      (installer-msg t "Installing ~A in ~A, ~A"
+					     p source system)
+			      (setf p package))
+			 append (install-package source system p)))
+		     )
+		 (declare (ignore installed-package-sysfiles))
+		 (dolist
+		     ;; 20 Mar 2006
+		     ;; only install the packages we asked for
+		     (package packages) 
+		   #+old-asdf-behavior
+		   ;; install every package we downloaded
+		   (sysfile installed-package-sysfiles)
+		   (handler-bind
+		       (
+			#+asdf
+			(asdf:missing-dependency
+			 (lambda (c) 
+			   (installer-msg t
+					  "Downloading package ~A, required by ~A~%"
+					  (asdf::missing-requires c)
+					  (asdf:component-name
+					   (asdf::missing-required-by c)))
+			   (one-iter (list
+				      (asdf::coerce-name
+				       (asdf::missing-requires c))))
+			   (invoke-restart 'retry)))
+			#+mk-defsystem
+			(make:missing-component
+			 (lambda (c) 
+			   (installer-msg t
+					  "Downloading package ~A, required by ~A~%"
+					  (make:missing-component-name c)
+					  package
+					  )
+			   (one-iter (list (make:missing-component-name c)))
+			   (invoke-restart 'retry))))
+		     (loop (multiple-value-bind (ret restart-p)
+			       (with-simple-restart
+				   (retry "Retry installation")
+				 (push package *systems-installed-this-time*)
+				 (load-package package))
+			     (declare (ignore ret))
+			     (unless restart-p (return)))))))))
+	  (one-iter packages)))
       ;;; cleanup
       (unless (equal old-uids *trusted-uids*)
         (let ((create-file-p nil))
@@ -492,13 +440,16 @@
 	    (setf create-file-p
 		  (y-or-n-p "Do you want to create the file?")))
           (when (or create-file-p (probe-file trusted-uid-file))
+	    (ensure-directories-exist trusted-uid-file)
 	    (with-open-file (out trusted-uid-file
                                  :direction :output
                                  :if-exists :supersede)
 	      (with-standard-io-syntax
 	        (prin1 *trusted-uids* out))))))
       (dolist (l *temporary-files* t)
-	(when (probe-file l) (delete-file l))))))
+	(when (probe-file l) (delete-file l))))
+
+    (nreverse *systems-installed-this-time*)))
 
 (defun load-package (package)
   #+asdf
@@ -578,13 +529,17 @@
     (call-next-method)))
 
 (defun show-version-information ()
-  (let ((system (asdf:find-system 'asdf-install)))
-    (if system
+  (let ((version (asdf-install-version)))
+    (if version
       (format *standard-output* "~&;;; ASDF-Install version ~A"
-              (asdf:component-version system))
-      (format *standard-output* "~&;;; ASDF-Install version unknown; unable to find ASDF system definition."
-              (asdf:component-version system)))
+              version)
+      (format *standard-output* "~&;;; ASDF-Install version unknown; unable to find ASDF system definition."))
   (values)))
+
+(defun asdf-install-version ()
+  "Returns the ASDf-Install version information as a string or nil if it cannot be determined."
+  (let ((system (asdf:find-system 'asdf-install)))
+    (when system (asdf:component-version system))))
 
 ;; load customizations
 (eval-when (:load-toplevel :execute)
