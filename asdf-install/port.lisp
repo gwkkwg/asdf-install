@@ -133,99 +133,6 @@
   (ccl::open-tcp-stream (url-host url) (url-port url)
                         :element-type 'unsigned-byte))
 
-#+(or :sbcl :cmu)
-(defun make-stream-from-gpg-command (string file-name)
-  (#+:sbcl sb-ext:process-output
-   #+:cmu ext:process-output
-   (#+:sbcl sb-ext:run-program
-    #+:cmu ext:run-program
-    "gpg"
-    (list
-     "--status-fd" "1" "--verify" "-"
-     (namestring file-name))
-    :output :stream
-    :error nil
-    #+sbcl :search #+sbcl t
-    :input (make-string-input-stream string)
-    :wait t)))
-
-#+(and :lispworks (not :win32))
-(defun make-stream-from-gpg-command (string file-name)
-  ;; kludge - we can't separate the in and out streams
-  (let ((stream (sys:open-pipe (format nil "echo '~A' | gpg --status-fd 1 --verify - ~A"
-                                       string
-                                       (namestring file-name)))))
-    stream))
-
-(defun make-temp-sig (file-name content)
-  (let ((name (format nil "~A.asc" (namestring (truename file-name)))))
-    (with-open-file (out name
-                         :direction :output
-                         :if-exists :supersede)
-      (write-string content out))
-    (pushnew name *temporary-files*)
-    name))
-
-#+(and :lispworks :win32)
-(defun make-stream-from-gpg-command (string file-name)
-  (sys:open-pipe (format nil "gpg --status-fd 1 --verify \"~A\" \"~A\""
-                         (make-temp-sig file-name string)
-                         (namestring file-name))))
-
-#+(and :clisp (not (or :win32 :cygwin)))
-(defun make-stream-from-gpg-command (string file-name)
-  (let ((stream
-         (ext:run-shell-command (format nil "echo '~A' | gpg --status-fd 1 --verify - ~A"
-                                        string
-                                        (namestring file-name))
-                                :output :stream
-                                :wait nil)))
-    stream))
-
-#+(and :clisp (or :win32 :cygwin))
-(defun make-stream-from-gpg-command (string file-name)
-  (ext:run-shell-command (format nil "gpg --status-fd 1 --verify \"~A\" \"~A\""
-                                 (make-temp-sig file-name string)
-                                 (namestring file-name))
-                         :output :stream
-                         :wait nil))
-
-#+:allegro
-(defun make-stream-from-gpg-command (string file-name)
-  (multiple-value-bind (in-stream out-stream)
-                       (excl:run-shell-command
-                        #-:mswindows
-                        (concatenate 'vector
-                                     #("gpg" "gpg" "--status-fd" "1" "--verify" "-")
-                                     (make-sequence 'vector 1
-                                                    :initial-element (namestring file-name)))
-                        #+:mswindows
-                        (format nil "gpg --status-fd 1 --verify - \"~A\"" (namestring file-name))
-                        :input :stream
-                        :output :stream
-                        :separate-streams t
-                        :wait nil)
-    (write-string string in-stream)
-    (finish-output in-stream)
-    (close in-stream)
-    out-stream))
-
-#+:openmcl
-(defun make-stream-from-gpg-command (string file-name)
-  (let ((proc (ccl:run-program "gpg" (list "--status-fd" "1" "--verify" "-" (namestring file-name))
-                               :input :stream
-                               :output :stream
-                               :wait nil)))
-    (write-string string (ccl:external-process-input-stream proc))
-    (close (ccl:external-process-input-stream proc))
-    (ccl:external-process-output-stream proc)))
-
-#+:digitool
-(defun make-stream-from-gpg-command (string file-name)
-  (make-instance 'popen-input-stream
-    :command (format nil "echo '~A' | gpg --status-fd 1 --verify - '~A'"
-                     string
-                     (system-namestring file-name))))
 
 #+:sbcl
 (defun return-output-from-program (program args)
@@ -342,7 +249,7 @@
   #+:allegro
   (excl.osi:symlink old new)
   #+:lispworks
-  ;; we loose if the pathnames contain apostrophes...
+  ;; we lose if the pathnames contain apostrophes...
   (sys:call-system (format nil "ln -s '~A' '~A'"
                            (namestring old)
                            (namestring new)))
@@ -400,11 +307,150 @@
            (when (or byte (plusp (length line)))
              line))))
 
-;;; ---------------------------------------------------------------------------
-
 (defun open-file-arguments ()
   (append 
    #+sbcl
    '(:external-format :latin1)
    #+(or :clisp :digitool (and :lispworks :win32))
    '(:element-type (unsigned-byte 8))))
+
+(defun download-url-to-file (url file-name)
+  "Resolves url and then downloads it to file-name; returns the url actually used."
+  (destructuring-bind (response headers stream)
+      (block got
+	(loop
+	   (destructuring-bind (response headers stream) (url-connection url)
+	     (unless (member response '(301 302))	       
+	       (return-from got (list response headers stream)))
+	     (close stream)
+	     (setf url (header-value :location headers)))))
+    (when (>= response 400)
+      (error 'download-error :url url :response response))
+    (let ((length (parse-integer (or (header-value :content-length headers) "")
+				 :junk-allowed t)))
+      (installer-msg t "Downloading ~A bytes from ~A to ~A ..."
+		     (or length "some unknown number of")
+		     url
+		     file-name)
+      (force-output)
+      #+:clisp (setf (stream-element-type stream)
+		     '(unsigned-byte 8))
+      (let ((ok? nil) (o nil))
+	(unwind-protect
+	     (progn
+	       (setf o (apply #'open file-name 
+			      :direction :output :if-exists :supersede
+			      (open-file-arguments)))
+	       #+(or :cmu :digitool)
+	       (copy-stream stream o)
+	       #-(or :cmu :digitool)
+	       (if length
+		   (let ((buf (make-array length
+					  :element-type
+					  (stream-element-type stream))))
+		     #-:clisp (read-sequence buf stream)
+		     #+:clisp (ext:read-byte-sequence buf stream :no-hang nil)
+		     (write-sequence buf o))
+		   (copy-stream stream o))
+	       (setf ok? t))
+	  (when o (close o :abort (null ok?))))))
+    (close stream))
+  (values url))
+
+(defun download-url-to-temporary-file (url)
+  "Attempts to download url to a new, temporary file. Returns the resolved url and the file name \(as multiple values\)."
+  (let ((tmp (temp-file-name url)))
+    (pushnew tmp *temporary-files*)
+    (values (download-url-to-file url tmp) tmp)))
+
+(defun gpg-results (package signature)
+  (let ((tags nil))
+    (with-input-from-string
+	(gpg-stream 
+	 (shell-command (format nil "gpg --status-fd 1 --verify ~s ~s"
+				(namestring signature) (namestring package))))
+      (loop for l = (read-line gpg-stream nil nil)
+	 while l
+	 do (print l)
+	 when (> (mismatch l "[GNUPG:]") 6)
+	 do (destructuring-bind (_ tag &rest data)
+		(split-sequence-if (lambda (x)
+				     (find x '(#\Space #\Tab)))
+				   l)
+	      (declare (ignore _))
+	      (pushnew (cons (intern (string-upcase tag) :keyword)
+			     data) tags)))
+      tags)))
+
+#+allegro
+(defun shell-command (command)
+  (multiple-value-bind (output error status)
+	               (excl.osi:command-output command :whole t)
+    (values output error status)))
+
+#+clisp
+(defun shell-command (command)
+  ;; BUG: CLisp doesn't allow output to user-specified stream
+  (values
+   nil
+   nil
+   (ext:run-shell-command  command :output :terminal :wait t)))
+
+#+cmucl
+(defun shell-command (command)
+  (let* ((process (ext:run-program
+                   *shell-path*
+                   (list "-c" command)
+                   :input nil :output :stream :error :stream))
+         (output (file-to-string-as-lines (ext::process-output process)))
+         (error (file-to-string-as-lines (ext::process-error process))))
+    (close (ext::process-output process))
+    (close (ext::process-error process))
+    
+    (values
+     output
+     error
+     (ext::process-exit-code process))))
+
+#+lispworks
+(defun shell-command (command)
+  ;; BUG: Lispworks combines output and error streams
+  (let ((output (make-string-output-stream)))
+    (unwind-protect
+      (let ((status
+             (system:call-system-showing-output
+              command
+              :prefix ""
+              :show-cmd nil
+              :output-stream output)))
+        (values (get-output-stream-string output) nil status))
+      (close output))))
+
+#+openmcl
+(defun shell-command (command)
+  (let* ((process (create-shell-process command t))
+         (output (file-to-string-as-lines 
+                  (ccl::external-process-output-stream process)))
+         (error (file-to-string-as-lines
+                 (ccl::external-process-error-stream process))))
+    (close (ccl::external-process-output-stream process))
+    (close (ccl::external-process-error-stream process))
+    (values output
+            error
+            (process-exit-code process))))
+
+#+sbcl
+(defun shell-command (command)
+  (let* ((process (sb-ext:run-program
+                   *shell-path*
+                   (list "-c" command)
+                   :input nil :output :stream :error :stream))
+         (output (file-to-string-as-lines (sb-impl::process-output process)))
+         (error (file-to-string-as-lines (sb-impl::process-error process))))
+    (close (sb-impl::process-output process))
+    (close (sb-impl::process-error process))
+    (values
+     output
+     error
+     (sb-impl::process-exit-code process))))
+
