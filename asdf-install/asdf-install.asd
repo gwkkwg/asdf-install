@@ -28,9 +28,7 @@
 (defsystem asdf-install
   #+:sbcl :depends-on
   #+:sbcl (sb-posix sb-bsd-sockets)
-  
-  :version "0.5.7"
-  
+  :version "0.5.9"
   :components ((:file "defpackage")
                (:file "split-sequence" :depends-on ("defpackage"))
                
@@ -44,9 +42,16 @@
                (:file "variables" :depends-on ("port"))
 	       (:file "installer"
                       :depends-on ("port" "split-sequence" 
-                                   #+:digitool "digitool"
-                                   "conditions" "variables"))
-               (:file "deprecated" :depends-on ("installer"))))
+					  #+:digitool "digitool"
+					  "conditions" "variables"))
+               (:file "deprecated" :depends-on ("installer")))
+  :in-order-to ((test-op (load-op test-asdf-install)))
+  :perform (test-op :after (op c)
+                    (describe 
+		     (funcall (intern (symbol-name '#:run-tests) :lift) 
+			      :suite (intern
+				      (symbol-name '#:test-asdf-install)
+				      :test-asdf-install)))))
 	   
 ;;; ---------------------------------------------------------------------------
 
