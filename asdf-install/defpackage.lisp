@@ -26,6 +26,7 @@
    #:add-registry-location
    #:uninstall
    #:install
+   #:asdf-install-version
 
    #+(and asdf (or :win32 :mswindows))
    #:sysdef-source-dir-search   
@@ -43,6 +44,9 @@
    #:key-not-trusted
    #:author-not-trusted
    #:installation-abort
+
+   ;; restarts
+   #:install-anyways
    )
   
   #+(or :win32 :mswindows)
