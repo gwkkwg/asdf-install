@@ -38,7 +38,7 @@
                #+:digitool
                (:file "digitool" :depends-on ("port"))
                
-	       (:file "conditions" :depends-on ("defpackage"))
+	       (:file "conditions" :depends-on ("defpackage" "variables"))
                (:file "variables" :depends-on ("port"))
 	       (:file "installer"
                       :depends-on ("port" "split-sequence" 

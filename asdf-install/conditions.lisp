@@ -1,4 +1,4 @@
-(in-package asdf-install)
+(in-package #:asdf-install)
 
 (define-condition download-error (error)
   ((url :initarg :url :reader download-url)
@@ -38,7 +38,7 @@ in the path."))))
 				(car key-id) key-id)))
 	       (format s "No key found for key id 0x~A. ~
                         Try some command like ~%  gpg  --recv-keys 0x~A"
-		       (key-id c) (key-id c))))))
+		       key-id key-id)))))
 
 (define-condition key-not-trusted (gpg-error)
   ((key-id :initarg :key-id :reader key-id)

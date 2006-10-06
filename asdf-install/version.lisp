@@ -1,4 +1,4 @@
-(in-package asdf-install)
+(in-package #:asdf-install)
 
 (defparameter *major-version* "0")
 

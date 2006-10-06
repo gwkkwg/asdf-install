@@ -1,4 +1,4 @@
-(in-package asdf-install)
+(in-package #:asdf-install)
 
 (defun directorify (name)
   ;; input name may or may not have a trailing #\/, but we know we
@@ -106,6 +106,4 @@ namestrings.")
 
 (defvar *propagate-installation* nil
   "If true, then every required system will be re-asdf-installed.")
-
-
 

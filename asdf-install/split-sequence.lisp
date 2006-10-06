@@ -4,7 +4,7 @@
 ;;; <URL:http://groups.google.com/groups?as_umsgid=39F36F1A.B8F19D20%40simplex.nl>;
 ;;;
 
-(in-package asdf-install)
+(in-package #:asdf-install)
 
 (defun split-sequence-if (predicate seq &key (count nil) (remove-empty-subseqs nil) (from-end nil) (start 0) (end nil) (key nil key-supplied))
   "Return a list of subsequences in seq delimited by items satisfying

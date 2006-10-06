@@ -8,6 +8,7 @@
   (:export
 
    ;; Customizable variables.
+   #:*shell-path*
    #:*proxy*
    #:*cclan-mirror*
    #:*sbcl-home* ; Deprecated.

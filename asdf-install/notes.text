@@ -1,6 +1,22 @@
-;;; ---------------------------------------------------------------------------
-;;; To-do
-;;; ---------------------------------------------------------------------------
+#### To-do - Ijara
+
+- Cleanup current ASDFI even more
+- build in untar
+- build in call to CVS, SVN, DARCS, (make modular, obviously)
+- supports parts of system-check
+- support uninstall
+- supoort logging
+- support aliasing
+- support experimentation
+- support
+
+#### To-do - ASDF-Install
+
+- better place for temporary files
+
+- clean up symlink files to use shell-command
+
+- digitool and shell-command
 
 - Use a condition instead
   (error "ASDF-INSTALL: can't untar ~S." packagename)
@@ -75,12 +91,3 @@ partition-if
 partition-if-not
 
 
-
-;;; get this into asdf in general
-(eval-when (:load-toplevel :execute)
-  (let* ((*package* (find-package :asdf-install-customize))
-         (file (probe-file (merge-pathnames
-			    (make-pathname :name ".asdf-install")
-			    (truename (user-homedir-pathname)))))
-         )
-    (when file (load file))))

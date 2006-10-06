@@ -18,11 +18,6 @@
     (merge-pathnames (make-pathname :directory '(:relative "site-systems"))
 		     *working-directory*)))))
 
-(addtest (test-asdf-install-no-verify)
-  test-non-existent-package
-  (ensure-condition 'download-error
-    (install 'i-hope-this-package-does-not-exist)))
-
 (deftestsuite test-asdf-install-basic-installation (test-asdf-install) 
   ()
   (:dynamic-variables 

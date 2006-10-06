@@ -1,6 +1,8 @@
-(in-package :asdf-install)
+(in-package #:asdf-install)
 
 (defvar *temporary-files*)
+(defparameter *shell-path* "/bin/sh"
+  "The path to a Bourne compatible command shell in physical pathname notation.")
 
 (eval-when (:load-toplevel :compile-toplevel :execute)
   #+:lispworks
@@ -439,6 +441,18 @@
             error
             (process-exit-code process))))
 
+#+openmcl
+(defun create-shell-process (command wait)
+  (ccl:run-program
+   *shell-path*
+   (list "-c" command)
+   :input nil :output :stream :error :stream
+   :wait wait))
+
+#+openmcl
+(defun process-exit-code (process)
+  (nth-value 1 (ccl:external-process-status process)))
+
 #+sbcl
 (defun shell-command (command)
   (let* ((process (sb-ext:run-program
@@ -454,3 +468,16 @@
      error
      (sb-impl::process-exit-code process))))
 
+(defgeneric file-to-string-as-lines (pathname)
+  (:documentation ""))
+
+(defmethod file-to-string-as-lines ((pathname pathname))
+  (with-open-file (stream pathname :direction :input)
+    (file-to-string-as-lines stream)))
+
+(defmethod file-to-string-as-lines ((stream stream))
+  (with-output-to-string (s)
+    (loop for line = (read-line stream nil :eof nil) 
+	 until (eq line :eof) do
+	 (princ line s)
+	 (terpri s))))

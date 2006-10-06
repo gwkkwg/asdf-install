@@ -1,4 +1,4 @@
-(in-package :asdf-install)
+(in-package #:asdf-install)
 
 (pushnew :asdf-install *features*)
 
@@ -165,6 +165,7 @@
     (multiple-value-bind (signature-url signature-file) 
 	(download-url-to-temporary-file
 	 (download-link-for-signature package-url))
+      (declare (ignore signature-url))
       (values 
        package-file signature-file))))
   

@@ -6,12 +6,13 @@
 (in-package #:test-asdf-install-system)
 
 (defsystem test-asdf-install
-  :components ((:module "tests"
-                        :components ((:file "package")
-				     (:file "unit-tests"
-					    :depends-on ("package"))
-				     (:file "test-asdf-install"
-					    :depends-on ("package")))))
+  :components 
+  ((:module "tests"
+	    :components ((:file "package")
+			 (:file "unit-tests"
+				:depends-on ("package" "test-asdf-install"))
+			 (:file "test-asdf-install"
+				:depends-on ("package")))))
   :depends-on (asdf-install cl-fad lift))
 
 (defmethod perform ((o test-op) (c (eql (find-system :test-asdf-install))))
