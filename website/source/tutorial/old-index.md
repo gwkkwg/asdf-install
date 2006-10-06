@@ -1,87 +1,18 @@
+{set-property html yes}
+{set-property title "ASDF-Install Tutorial"}
+{set-property style-sheet style}
+
 ## A tutorial for ASDF-INSTALL
+
 > 
 > ### Abstract
 > 
 > This tutorial is intended for people who are relatively new to Common Lisp. It describes an easy way to install third-party libraries into a Lisp implementation. 
-
   
-### Contents
+## Contents
 
-  1. [Introduction][1]
-  2. [What is ASDF?][2]
-  3. [What is ASDF-INSTALL?][3]
-  4. [Prerequisites][4]
-    1. [Installing ASDF][5]
-    2. [Loading ASDF automatically][6]
-    3. [Installing ASDF-INSTALL][7]
-    4. [Loading ASDF-INSTALL automatically][8]
-  5. [Optional: Using MK:DEFSYSTEM instead of (or in addition to) ASDF][9]
-  6. [How to install a library][10]
+{table-of-contents :start-at 2}
 
-    1. [Installing a library by name][11]
-    2. [Installing a library by URL][12]
-    3. [Installing from a local file][13]
-    4. [Where to store the library][14]
-    5. [The security check][15]
-
-  7. [How to use an installed library][16]
-  8. [How ASDF-INSTALL resolves dependencies][17]
-  9. [Customizing ASDF-INSTALL][18]
-
-    1. [Special variable `*GNU-TAR-PROGRAM*`][19]
-    2. [Special variable `*PROXY*`][20]
-    3. [Special variable `*PROXY-USER*`][21]
-    4. [Special variable `*PROXY-PASSWD*`][22]
-    5. [Special variable `*CCLAN-MIRROR*`][23]
-    6. [Special variable `*VERIFY-GPG-SIGNATURES*`][24]
-    7. [Special variable `*SAFE-URL-PREFIXES*`][25]
-    8. [Special variable `*LOCATIONS*`][26]
-    9. [Special variable `*PREFERRED-LOCATION*`][27]
-    10. [Environment variable `ASDF_INSTALL_DIR`][28]
-    11. [Environment variable `PRIVATE_ASDF_INSTALL_DIR`][29]
-
-  10. [The list of trusted code suppliers][30]
-  11. [How to uninstall a library][31]
-  12. [Changelog][32]
-  13. [Copyright][33]
-  14. [License][34]
-
-   [1]: #intro
-   [2]: #asdf
-   [3]: #asdf-install
-   [4]: #pre
-   [5]: #install-asdf
-   [6]: #load-asdf
-   [7]: #install-asdf-install
-   [8]: #load-asdf-install
-   [9]: #defsystem
-   [10]: #library
-   [11]: #name
-   [12]: #url
-   [13]: #local
-   [14]: #where
-   [15]: #security
-   [16]: #use
-   [17]: #dependencies
-   [18]: #customize
-   [19]: #*gnu-tar-program*
-   [20]: #*proxy*
-   [21]: #*proxy-user*
-   [22]: #*proxy-passwd*
-   [23]: #*cclan-mirror*
-   [24]: #*verify-gpg-signatures*
-   [25]: #*safe-url-prefixes*
-   [26]: #*locations*
-   [27]: #*preferred-location*
-   [28]: #asdf-install-dir
-   [29]: #private-asdf-install-dir
-   [30]: #trusted-uids
-   [31]: #uninstall
-   [32]: #changelog
-   [33]: #copyright
-   [34]: #license
-
-  
 ### Introduction
 
 If you're reading this you're probably already convinced that Common Lisp is a very fine programming language. However, while the [ANSI standard][35] is huge and provides tons of functionality there are a couple of things (like, say, XML parsers, web servers, GUIs, regular expressions) that aren't included and must either be provided by your particular implementation or otherwise by a third-party library. 
@@ -134,9 +65,9 @@ It'd be nice if users of other Lisps (like [Corman Lisp][54], [ECL][55], or [Sci
    [55]: http://ecls.sourceforge.net/
    [56]: http://www.scieneer.com/scl/
 
-The original ASDF-INSTALL is distributed with SBCL. The latest incarnation of the "portable" version is available from [Common-Lisp.net][57]'s. 
+The original ASDF-INSTALL is distributed with SBCL. The latest incarnation of the "portable" version is available from [Common-Lisp.net][57]. 
 
-   [57]: http://common-lisp.net/asdf-install
+   [57]: http://common-lisp.net/project/asdf-install/
    [58]: http://cvs.sourceforge.net/viewcvs.py/cclan/asdf-install/
 
 Note that the "portable" version can be considered a fork of the original (SBCL-only) version. Likewise, versions of ASDF-INSTALL distributed with other Lisp implementations like OpenMCL are most likely forks of the "portable" version. This document mostly describes how to use the "portable" version. If you're on a system like SBCL or OpenMCL that comes with its own version of ASDF-INSTALL you are advised to _ignore_ the rest of this tutorial and instead consult the documentation that was supplied by your vendor. (Parts of this tutorial might apply to these implementations as well but they're not guaranteed to be kept up to date.) 
@@ -148,21 +79,23 @@ This tutorial and the portable version of ASDF-INSTALL were originally started b
 
 ### Prerequisites
 
-This tutorial is aimed at Unix-like systems which should include Linux and Mac OS X. If you're on MS Windows make sure to read the _Windows notes_ at the end of each section. 
+This tutorial is aimed at Unix-like systems which include Linux and Mac OS X. If you're on MS Windows make sure to read the _Windows notes_ at the end of each section. 
 
-Apart from one of the [supported Lisps][61] you will need [GnuPG][62] (which is probably pre-installed on most Linux distributions). Install it first if you don't have it already. You may also need to install [the GNU version of `tar`][63] if you're not on Linux. 
+Apart from one of the [supported Lisps][61] you will need [GnuPG][62] (which is  pre-installed on most Linux distributions but not on OS X). Install it first if you don't have it already. You may also need to install [the GNU version of `tar`][63] if you're not on Linux. 
 
    [61]: #asdf-install
    [62]: http://www.gnupg.org/
    [63]: http://www.gnu.org/software/tar/tar.html
 
-(GnuPG is not strictly necessary - see [below][64] - but it is recommended if you want to be reasonable sure that you're not installing arbitrary malicious code.) 
+(GnuPG is not strictly necessary - see [below][64] - but it is recommended
+if you want to be somewhat more sure that you're not installing arbitrary malicious code.) 
 
    [64]: #*verify-gpg-signatures*
 
 _Update:_ Beginning with version 0.14.1 ASDF-INSTALL is already included with the OpenMCL distribution. Also, AllegroCL 7.0 and higher include ASDF (but not ASDF-INSTALL.) See below for details. 
 
-_Note:_ For MCL you must start your Lisp from a terminal. 
+_Note:_ ASDF-Install will not work with MCL unless you start MCL 
+from a terminal. 
 
 _Windows note:_ If you want to use ASDF-INSTALL on Windows you must install [Cygwin][65] first. You can also install GnuPG from the Cygwin setup program. If you want to use CLISP you currently [have to use][66] the Cygwin version (which can also be installed from the setup application). The good news is that if you use Cygwin you can pretty much pretend you're on Unix and **skip** all the _Windows notes_ below. 
 
@@ -174,7 +107,7 @@ _Windows note:_ If you want to use ASDF-INSTALL on Windows you must install [Cyg
    [67]: http://www.google.com/groups?selm=2gacj0Fi7moU1%40uni-berlin.de&output=gplain
    [68]: news://comp.lang.lisp
 
-Whenever I use `~/` (the Unix shell notation for the user's home directory) in the following text what is actually meant is the value of `([USER-HOMEDIR-PATHNAME][69])`. While on Unix/Linux all implementations seem to agree what this value should be, on Windows this is not the case. Read the docs of your Lisp. 
+Whenever I use `~/` (the Unix shell notation for the user's home directory) in the following text what is actually meant is the value of ([`USER-HOMEDIR-PATHNAME`][69]). While on Unix/Linux all implementations seem to agree what this value should be, on Windows this is not the case. Read the docs of your Lisp. 
 
    [69]: http://www.lispworks.com/reference/HyperSpec/Body/f_user_h.htm
 
@@ -222,7 +155,7 @@ instead.
 
 ASDF maintains a list of places where it will look for _system definitions_ when it is asked to load or compile a system. (System definitions are the files ending with `.asd`.) This list is stored in the [special variable][75] `ASDF:*CENTRAL-REGISTRY*` and you can add new directories to it. Open your initialization file once again and add the following line _after_ the line which loads ASDF: 
     
-       [75]: http://www.lispworks.com/reference/HyperSpec/Body/26_glo_s.htm#special_variable
+   [75]: http://www.lispworks.com/reference/HyperSpec/Body/26_glo_s.htm#special_variable
 
 
     (pushnew "/path/to/your/registry/" asdf:*central-registry* :test #'equal)
@@ -252,7 +185,7 @@ _Windows note:_ On Windows we can't use a central registry because Windows doesn
 
 ([Skip][78] this section if you use SBCL.) [Download ASDF-INSTALL][79] and put the `.lisp` and `.asd` file into a new directory `asdf-install` which can be located wherever you like. Now create a symlink to your `.asd` file from your [registry][80] folder: 
     
-       [78]: #load-asdf-install
+   [78]: #load-asdf-install
    [79]: http://cvs.sourceforge.net/viewcvs.py/cclan/asdf-install/
    [80]: #registry
 
@@ -284,7 +217,7 @@ and then either restart your Lisp or evaluate this expression in your current se
 
 Open your [initilization file][81] again and add this line at the end: 
     
-       [81]: #load-asdf
+   [81]: #load-asdf
 
 
     #-:asdf-install (asdf:operate 'asdf:load-op :asdf-install)
@@ -331,7 +264,7 @@ To set up your Lisp environment for this you have to do the following (after rea
   * Get MK:DEFSYSTEM (version 3.4i or higher) from [CLOCC][87]. (You can grab a nightly snapshot or browse the CVS. You only need the file `defsystem.lisp` from within the `src/defsystem-3.x` directory.) 
   * To install MK:DEFSYSTEM evaluate the form 
     
-       [87]: http://clocc.sourceforge.net/
+   [87]: http://clocc.sourceforge.net/
 
 
     (load (compile-file "/path/to/defsystem.lisp"))
@@ -340,23 +273,23 @@ To set up your Lisp environment for this you have to do the following (after rea
   * To load MK:DEFSYSTEM automatically each time you start your Lisp put the forms 
     
     
-    #-:mk-defsystem (load "/path/to/defsystem")
-    (mk:add-registry-location "/path/to/your/registry/")
+        #-:mk-defsystem (load "/path/to/defsystem")
+        (mk:add-registry-location "/path/to/your/registry/")
     
 
 into your initialization file. 
   * Finally, replace the line 
     
     
-    #-:asdf-install (asdf:operate 'asdf:load-op :asdf-install)
+        #-:asdf-install (asdf:operate 'asdf:load-op :asdf-install)
     
 
 from [above][88] with the line 
     
-       [88]: #load-asdf-install
+   [88]: #load-asdf-install
 
 
-    #-:asdf-install (load "/path/to/asdf-install/load-asdf-install")
+        #-:asdf-install (load "/path/to/asdf-install/load-asdf-install")
     
 
 This last step will ensure that ASDF-INSTALL will always be loaded on startup even if you only use MK:DEFSYSTEM and don't have ASDF available. 
@@ -382,7 +315,7 @@ The webpage [http://www.cliki.net/asdf-install][90] contains a list of libraries
 
 You can click on the name of each library to get a description. Use the library's name from the list to install it. If, say, you want to install [CL-PPCRE][92] make sure you're connected to the Internet and use this command: 
     
-       [92]: http://weitz.de/cl-ppcre/
+   [92]: http://weitz.de/cl-ppcre/
 
 
     (asdf-install:install :cl-ppcre)
@@ -428,7 +361,7 @@ _Note:_ It's obviously rather easy to make an existing library ASDF-installable 
 
 The third way to install a library via ASDF-INSTALL is to use a local tar archive (in the format described [in the last section][99]). In this case you use the file's [namestring][100]
     
-       [99]: #url
+   [99]: #url
    [100]: http://www.lispworks.com/reference/HyperSpec/Body/26_glo_n.htm#namestring
 
 
@@ -443,20 +376,21 @@ _Note:_ For obvious reasons this namestring must not start with `"http://"` alth
 
 ASDF-INSTALL will now ask you where the library should be stored. (This can be [customized][101].) In the default configuration this'll look more or less like so: 
     
-       [101]: #*locations*
+   [101]: #*locations*
 
 
     Install where?
     1) System-wide install:
        System in /usr/local/asdf-install/site-systems/
        Files in /usr/local/asdf-install/site/
-    2) Personal installation:
-       System in /home/edi/.asdf-install-dir/systems/
-       Files in /home/edi/.asdf-install-dir/site/
-     -->
+    2) Personal installation: 
+       System in /Users/gwking/.asdf-install-dir/systems/
+       Files in /Users/gwking/.asdf-install-dir/site/ 
+    0) Abort installation.     
+    -->
     
 
-Choose one of these options and enter the corresponding number, then press the `Return` key. (Note that on Unix-like systems you usually don't have write access in `/usr/local/` unless you're `root`.) 
+Choose one of these options and enter the corresponding number, then press the `Return` key. (Note that on Unix-like systems you usually don't have write access in `/usr/local/` unless you're `root`.) Choice 0 will always be assigned to canceling the installation.
 
 #### The security check
 
@@ -466,7 +400,7 @@ If you don't install from a local file, ASDF-INSTALL will now check the validity
 
 ASDF-INSTALL will check 
 
-  * if the signature exists, 
+  * if the signature exists on your computer, 
   * if there is a GPG trust relationship between the package signer and you (i.e. that the package comes from someone whose key you've signed, or someone else you have GPG trust with has signed), and 
   * if the signer is listed in your [personal list of valid suppliers of Lisp code][103]. 
 
@@ -581,7 +515,7 @@ After you've successfully executed `ASDF-INSTALL:INSTALL` you can immediately us
 
 Here `:LIBRARY-NAME` is either the name you've used if you installed [by name][111] or it is the name of the main `.asd` file if you've installed [by URL][112] or [from a local file][113]. If you're not sure about the name you have to use, you can list the contents of your [registry][114] for all libraries which are available to you. So, if your registry looks like this 
     
-       [111]: #name
+   [111]: #name
    [112]: #url
    [113]: #local
    [114]: #registry
@@ -597,7 +531,7 @@ you can substitute `:LIBRARY-NAME` with one of `:CL-PPCRE`, `:CL-PPCRE-TEST`, `:
 
 If you use SBCL you can, instead of calling `ASDF:OPERATE`, simply [`REQUIRE`][116] the library: 
     
-       [116]: http://www.lispworks.com/reference/HyperSpec/Body/f_provid.htm
+   [116]: http://www.lispworks.com/reference/HyperSpec/Body/f_provid.htm
 
 
     (require :library-name)
@@ -660,6 +594,7 @@ This variable is set to `"http://ftp.linux.org.uk/pub/lisp/cclan/"` before `~/.a
    [127]: http://www.cliki.net/cclan
    [128]: http://ww.telent.net/cclan-choose-mirror
 
+{anchor *verify-gpg-signatures*}
 #### Special variable `*VERIFY-GPG-SIGNATURES*`
 
 This variable is set to `T` initially which means that there'll be a [security check][129] for each library which is not installed from a local file. You can set it to `NIL` which means no checks at all or to `:UNKNOWN-LOCATIONS` which means that only URLs which are not in [`*SAFE-URL-PREFIXES*`][130] are checked. Every other value behaves like `T`. 
@@ -717,7 +652,7 @@ _Note:_ This customization option is currently not supported in the SBCL version
 
 The value of this _environment variable_ determines the first element of the initial value of [`*LOCATIONS*`][140], i.e. if it, say, contains the value `/usr/local/foo/`, then the first element of `*LOCATIONS*` is 
     
-       [140]: #*locations*
+   [140]: #*locations*
 
 
     (#p"/usr/local/foo/site/"
@@ -733,7 +668,7 @@ _Note:_ On SBCL the value of `SBCL_HOME` is used instead.
 
 The value of this _environment variable_ determines the second element of the initial value of [`*LOCATIONS*`][141], i.e. if it, say, contains the value `frob/` and your username is `johndoe`, then the second element of `*LOCATIONS*` is 
     
-       [141]: #*locations*
+   [141]: #*locations*
 
 
     (#p"/home/johndoe/frob/site/"
@@ -816,42 +751,43 @@ _Windows note:_ Due to [the way systems are found][152] on Windows ASDF-INSTALL 
 
 ### Changelog
 
-2006-01-08Tutorial and software now maintained by Gary King, removed weitz.de links
-2005-12-21Changed GNU tar default for FreeBSD and NetBSD (Richard Kreuter)
-2005-12-16Fixed bug in load dependencies (Gary King)
-2005-12-16Fixed file descriptor leak (John Wiseman)
-2005-12-14Fixed request URI (Zach Beane)
-2005-12-05Check GPG return values (thanks to Gary King)
-2005-10-18Changes for compatibility with SBCL's Unicode support (thanks to Christophe Rhodes)
-2005-09-27Small change for compatibility with future OpenMCL versions (thanks to Bryan O'Connor)
-2005-07-14Updated note about CLISP (thanks to Henri Lenzi)
-2005-06-01Added proxy authentication code (thanks to Sean Ross)
-2005-02-16More OpenMCL details (thanks to Jim Thompson)
-2004-12-29Added COPYRIGHT file to distribution
-2004-09-13Added information about AllegroCL 7.0 and OpenMCL 0.14.1
-2004-09-08Fixed typo in `GET-ENV-VAR` and added special variable `*GNU-TAR-PROGRAM*` (both thanks to Raymond Toy)
-2004-05-20Changed hyphens to underlines in names of environment variables (thanks to Robert P. Goldman)
-2004-05-19Mentioned Alex Mizrahi's notes, added version number for MK:DEFSYSTEM in docs and SPLIT-SEQUENCE dependency in ASDF system definition (thanks to Robert P. Goldman and Robert Lehr)
-2004-04-28Fixed `asdf-install.asd` so that it still works and you're not forced to use `load-asdf-install.lisp`
-2004-04-25MK:DEFSYSTEM clarification
-2004-04-24Patches by Marco Antoniotti for MK:DEFSYSTEM compatibility
-2004-03-27Bugfixes by Kiyoshi Mizumaru
-2004-01-28Improved MCL support (James Anderson)
-2004-01-21Support for MCL by James Anderson
-2004-01-16Minor edits, Cygwin CLISP support, download location for `asdf.fas`
-2004-01-15Preliminary Windows support, described how to uninstall a library, added `*PREFERRED-LOCATION*`, removed `ln` bug in CLISP code
-2004-01-13 Mentioned OpenMCL support (Marco Baringer), added some SBCL exceptions, added clarification about Windows, minor edits, changes by Dan Barlow
-2004-01-12Initial version
+    2006-01-08 Tutorial and software now maintained by Gary King, removed weitz.de links
+    2005-12-21 Changed GNU tar default for FreeBSD and NetBSD (Richard Kreuter)
+    2005-12-16 Fixed bug in load dependencies (Gary King)
+    2005-12-16 Fixed file descriptor leak (John Wiseman)
+    2005-12-14 Fixed request URI (Zach Beane)
+    2005-12-05 Check GPG return values (thanks to Gary King)
+    2005-10-18 Changes for compatibility with SBCL's Unicode support (thanks to Christophe Rhodes)
+    2005-09-27 Small change for compatibility with future OpenMCL versions (thanks to Bryan O'Connor)
+    2005-07-14 Updated note about CLISP (thanks to Henri Lenzi)
+    2005-06-01 Added proxy authentication code (thanks to Sean Ross)
+    2005-02-16 More OpenMCL details (thanks to Jim Thompson)
+    2004-12-29 Added COPYRIGHT file to distribution
+    2004-09-13 Added information about AllegroCL 7.0 and OpenMCL 0.14.1
+    2004-09-08 Fixed typo in `GET-ENV-VAR` and added special variable `*GNU-TAR-PROGRAM*` (both thanks to Raymond Toy)
+    2004-05-20 Changed hyphens to underlines in names of environment variables (thanks to Robert P. Goldman)
+    2004-05-19 Mentioned Alex Mizrahi's notes, added version number for MK:DEFSYSTEM in docs and SPLIT-SEQUENCE dependency in ASDF system definition (thanks to Robert P. Goldman and Robert Lehr)
+    2004-04-28 Fixed `asdf-install.asd` so that it still works and you're not forced to use `load-asdf-install.lisp`
+    2004-04-25 MK:DEFSYSTEM clarification
+    2004-04-24 Patches by Marco Antoniotti for MK:DEFSYSTEM compatibility
+    2004-03-27 Bugfixes by Kiyoshi Mizumaru
+    2004-01-28 Improved MCL support (James Anderson)
+    2004-01-21 Support for MCL by James Anderson
+    2004-01-16 Minor edits, Cygwin CLISP support, download location for `asdf.fas`
+    2004-01-15 Preliminary Windows support, described how to uninstall a library, added `*PREFERRED-LOCATION*`, removed `ln` bug in CLISP code
+    2004-01-13 Mentioned OpenMCL support (Marco Baringer), added some SBCL exceptions, added clarification about Windows, minor edits, changes by Dan Barlow
+    2004-01-12 Initial version
   
    
 
 
 ### Copyright
 
+Copyright (c) 2006-2006 [Gary King][gwking]. All rights reserved. 
+  
 Copyright (c) 2004-2006 [Dr. Edmund Weitz][153]. All rights reserved.   
-   
 
-
+   [gwking]: http://www.metabang.com/
    [153]: http://www.weitz.de/
 
 ### License
@@ -862,8 +798,3 @@ Redistribution and use of this tutorial in its orginal form (HTML) or in 'derive
 
 IMPORTANT: This document is provided by the author "as is" and any expressed or implied warranties, including, but not limited to, the implied warranties of merchantability and fitness for a particular purpose are disclaimed. In no event shall the author be liable for any direct, indirect, incidental, special, exemplary, or consequential damages (including, but not limited to, procurement of substitute goods or services; loss of use, data, or profits; or business interruption) however caused and on any theory of liability, whether in contract, strict liability, or tort (including negligence or otherwise) arising in any way out of the use of this documentation, even if advised of the possibility of such damage. 
 
-$Header: /cvsroot/cclan/asdf-install/doc/index.html,v 1.22 2006/01/08 22:40:46 nhabedi Exp $ 
-
-[BACK TO MY HOMEPAGE][154]
-
-   [154]: http://weitz.de/index.html
