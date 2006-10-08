@@ -1,4 +1,6 @@
-pre { padding:5px; background-color:#e0e0e0 }
+pre { padding:5px; background-color:#e0e0e0;
+	overflow: auto;
+}
 
 body {
 	background: white;
@@ -14,7 +16,11 @@ body {
 }
 
 #header {
-	
+	text-align: left;
+	border-top: 1px none black;
+	border-collapse: collapse;
+	border-bottom: 1px dotted black;
+	margin-bottom: 1em;
 }
 
 #navigation li {
@@ -27,6 +33,10 @@ body {
 	padding-right: 0.25em;
 	padding-left: 0.25em;
 	margin-right: 1em;
+}
+
+#navigation {
+	text-align: center;
 }
 
 #timestamp {

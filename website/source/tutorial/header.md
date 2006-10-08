@@ -12,4 +12,6 @@
    [section-license]: copyright.html
    [section-index]: index.html
 
+<div id="header">
 {include navigation.md}
+</div>
