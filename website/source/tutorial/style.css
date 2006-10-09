@@ -9,6 +9,13 @@ body {
 	padding-right: 3em;
 }
 
+.note {
+	border: 2px inset gray;
+	padding: 0.5em;
+	margin-right: 2em;
+	margin-left: 2em;
+}
+
 #footer {
 	margin-top: 2em;
 	border-top-style: inset;
