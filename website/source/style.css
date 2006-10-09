@@ -21,6 +21,8 @@ body {
     padding-top: 3em;
 	padding-bottom: 2em;
 	padding-right: 1em;
+	text-align: right;
+	display: block;
 }.footer a:link {	font-weight:bold;	color:#ffffff;	text-decoration:underline;}.footer a:visited {	font-weight:bold;	color:#ffffff; 	text-decoration:underline;}.footer a:hover { 	font-weight:bold; 	color:#002244; 	text-decoration:underline;
 		 }
 
