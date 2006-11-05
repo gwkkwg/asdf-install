@@ -261,7 +261,8 @@
                                       (list (format nil "~A" (namestring old))
                                             (format nil "~A" (namestring new)))))
   #+:openmcl
-  (ccl:run-program "ln" (list "-s" (namestring old) (namestring new)))
+  (ccl:run-program "/bin/ln" (list "-s" (namestring old) (namestring new))
+                   :wait t)
   #+:digitool
   (ccl::call-system (format nil "ln -s '~A' '~A'"
                             (system-namestring old)
