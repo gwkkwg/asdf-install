@@ -10,7 +10,6 @@
  
 <div class="note">
 This tutorial is a work in progress and a "port" of Edi Weitz's [original ASDF-Install tutorial][]. Please send e-mail to asdf-install-devel@common-lisp.net if you have any questions or find anything amiss.
-
 </div>
 
   [original ASDF-Install tutorial]: index-save.html
