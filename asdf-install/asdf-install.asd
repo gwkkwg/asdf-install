@@ -28,7 +28,7 @@
 (defsystem asdf-install
   #+:sbcl :depends-on
   #+:sbcl (sb-posix sb-bsd-sockets)
-  :version "0.6.0"
+  :version "0.6.1"
   :components ((:file "defpackage")
                (:file "split-sequence" :depends-on ("defpackage"))
                
