@@ -279,17 +279,17 @@
 
 ;;; install-package --
 
+(defun find-shell-command (command)
+  (loop for directory in *shell-path* do
+       (let ((target (make-pathname :name command :type nil
+				    :directory directory)))
+	 (when (probe-file target)
+	   (return-from find-shell-command target))))
+  (values nil))
+
 (defun tar-command ()
   #-(or :win32 :mswindows)
-  (let ((tar-command (pathname-name *gnu-tar-program*)))
-    (flet ((find-bin (directory)
-	     (let ((bin (make-pathname :name tar-command
-				       :type nil
-				       :directory directory)))
-	       (when (probe-file bin)
-		 (namestring bin)))))
-      (or (find-bin nil)
-	  (find-bin "/usr/bin/"))))
+  (find-shell-command *gnu-tar-program*)
   #+(or :win32 :mswindows)
   *cygwin-bash-program*)
 
