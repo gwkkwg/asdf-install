@@ -16,7 +16,7 @@
    #:private-asdf-install-dirs
    #:*tar-extractors*
 
-   #:*shell-path*
+   #:*shell-search-paths*
    #:*verify-gpg-signatures*
    #:*locations*
    #:*safe-url-prefixes*
