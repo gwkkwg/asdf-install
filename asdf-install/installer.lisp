@@ -280,11 +280,11 @@
 ;;; install-package --
 
 (defun find-shell-command (command)
-  (loop for directory in *shell-path* do
+  (loop for directory in *shell-search-paths* do
        (let ((target (make-pathname :name command :type nil
 				    :directory directory)))
 	 (when (probe-file target)
-	   (return-from find-shell-command target))))
+	   (return-from find-shell-command (namestring target)))))
   (values nil))
 
 (defun tar-command ()
@@ -344,13 +344,17 @@
 	  collect sysfile)))
 
 (defun temp-file-name (p)
-  (let* ((pos-slash (position #\/ p :from-end t))
-	 (pos-dot (position #\. p :start (or pos-slash 0))))
-    (merge-pathnames
-     (make-pathname
-      :name (subseq p (if pos-slash (1+ pos-slash) 0) pos-dot)
-      :type "asdf-install-tmp")
-     #+:clisp (user-homedir-pathname))))
+  (declare (ignore p))
+  (let ((pathname nil))
+    (loop for i = 0 then (1+ i) do
+	 (setf pathname 
+	       (merge-pathnames
+		(make-pathname
+		 :name (format nil "asdf-install-~d" i)
+		 :type "asdf-install-tmp")
+		#+:clisp (user-homedir-pathname)))
+	 (unless (probe-file pathname)
+	   (return-from temp-file-name pathname)))))
 
 
 ;;; install
