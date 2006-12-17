@@ -1,5 +1,9 @@
 ;;; -*-  Lisp -*-
 
+;;; Portatble ASDF-Install is based on Dan Barlow's ASDF-Install 
+;; (see the file COPYRIGHT for details). It is currently maintained
+;; by Gary King <gwking@metabang.com>.
+
 (defpackage #:asdf-install-system 
   (:use #:cl #:asdf))
 
@@ -13,6 +17,7 @@
 ;;; define output-files properly instead of leaving it be the fasl
 #+:sbcl
 (defclass exe-file (cl-source-file) ())
+
 #+:sbcl
 (defmethod perform :after ((o compile-op) (c exe-file))
   (sb-executable:make-executable
@@ -28,7 +33,9 @@
 (defsystem asdf-install
   #+:sbcl :depends-on
   #+:sbcl (sb-posix sb-bsd-sockets)
-  :version "0.6.4"
+  :version "0.6.5"
+  :author "Dan Barlow <dan@telent.net>, Edi Weitz <edi@agharta.de> and many others. See the file COPYRIGHT for more details."
+  :maintainer "Gary Warren King <gwking@metabang.com>"
   :components ((:file "defpackage")
                (:file "split-sequence" :depends-on ("defpackage"))
                
@@ -53,8 +60,6 @@
 				      (symbol-name '#:test-asdf-install)
 				      :test-asdf-install)))))
 	   
-;;; ---------------------------------------------------------------------------
-
 (defmethod perform :after ((o load-op) (c (eql (find-system :asdf-install))))
   (let ((show-version (find-symbol
                        (symbol-name '#:show-version-information) '#:asdf-install)))
