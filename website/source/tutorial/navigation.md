@@ -1,7 +1,9 @@
 <div id="navigation">
-* [index][section-index]
-* [introduction][section-introduction]
-* [prerequisites] [section-prerequisites]
+* [contents][section-index]
+* [intro][section-introduction]
+* [setup] [section-prerequisites]
+* [install][section-install]
+* [uninstall][section-uninstall]
 * [reference][section-reference]
 * [changlog][section-changelog]
 * [license][section-license]

@@ -399,7 +399,7 @@
    nil
    (ext:run-shell-command  command :output :terminal :wait t)))
 
-#+cmucl
+#+:cmu
 (defun shell-command (command)
   (let* ((process (ext:run-program
                    *shell-path*
