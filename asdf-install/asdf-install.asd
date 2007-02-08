@@ -33,7 +33,7 @@
 (defsystem asdf-install
   #+:sbcl :depends-on
   #+:sbcl (sb-posix sb-bsd-sockets)
-  :version "0.6.5"
+  :version "0.6.6"
   :author "Dan Barlow <dan@telent.net>, Edi Weitz <edi@agharta.de> and many others. See the file COPYRIGHT for more details."
   :maintainer "Gary Warren King <gwking@metabang.com>"
   :components ((:file "defpackage")
