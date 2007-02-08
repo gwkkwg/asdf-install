@@ -36,9 +36,9 @@ in the path."))))
 		    (key-id (if (and (consp key-id) 
 				     (> (length key-id) 1))
 				(car key-id) key-id)))
-	       (format s "No key found for key id 0x~A. ~
-                        Try some command like ~%  gpg  --recv-keys 0x~A"
-		       key-id key-id)))))
+	       (format s "~&No key found for key id 0x~A.~%" key-id)
+	       (format s "~&Try some command like ~%  gpg  --recv-keys 0x~A"
+		       (format nil "~a" key-id))))))
 
 (define-condition key-not-trusted (gpg-error)
   ((key-id :initarg :key-id :reader key-id)
