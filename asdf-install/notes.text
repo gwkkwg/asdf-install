@@ -1,3 +1,5 @@
+why doesn't return-output-from-program use shell-command?
+
 remove asdf-doc directory (or symlink it or something)
 
 
