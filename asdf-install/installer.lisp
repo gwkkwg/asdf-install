@@ -3,7 +3,8 @@
 (pushnew :asdf-install *features*)
 
 (defun installer-msg (stream format-control &rest format-arguments)
-  (apply #'format stream "~&;;; ASDF-INSTALL: ~@?~%" format-control format-arguments))
+  (apply #'format stream "~&;;; ASDF-INSTALL: ~@?~%"
+	 format-control format-arguments))
 
 (defun verify-gpg-signatures-p (url)
   (labels ((prefixp (prefix string)
@@ -28,24 +29,16 @@
          a b (string-equal a b))))
 
 (defun add-registry-location (location)
-  #+asdf
-  (pushnew location
-           asdf:*central-registry*
-           :test #'same-central-registry-entry-p)
+  (let ((location-directory (pathname-sans-name+type location)))
+    #+asdf
+    (pushnew location-directory
+	     asdf:*central-registry*
+	     :test #'same-central-registry-entry-p)
   
-  #+mk-defsystem
-  (mk:add-registry-location location))
+    #+mk-defsystem
+    (mk:add-registry-location location-directory)))
 
-#+(and (not :sbcl))
-(add-registry-location 
- (merge-pathnames (make-pathname :directory '(:relative "site-systems"))
-                  *asdf-install-dirs*))
-
-#+(and (not :sbcl))
-(add-registry-location 
- (merge-pathnames (make-pathname :directory '(:relative "systems"))
-                  *private-asdf-install-dirs*))
-
+0
 ;;; Fixing the handling of *LOCATIONS*
 
 (defun add-locations (loc-name site system-site)
@@ -76,7 +69,8 @@
 (defun url-port (url)
   (assert (string-equal url "http://" :end1 7))
   (let ((port-start (position #\: url :start 7)))
-    (if port-start (parse-integer url :start (1+ port-start) :junk-allowed t) 80)))
+    (if port-start 
+	(parse-integer url :start (1+ port-start) :junk-allowed t) 80)))
 
 ; This is from Juri Pakaste's <juri@iki.fi> base64.lisp
 (defparameter *encode-table*
@@ -194,25 +188,26 @@
 			   ;; ok
 			   )
 			  ((not trusted?)
-			   (error 'key-not-trusted :key-user-name name :key-id id))
+			   (error 'key-not-trusted 
+				  :key-user-name name :key-id id))
 			  ((not in-list?)
 			   (error 'author-not-trusted
-				  :key-user-name name :key-id id))
-			  (t
-			   (error "Boolean logic gone bad. Run for the hills"))))
+				  :key-user-name name :key-id id))))
 		(add-key (&rest rest)
 		  :report "Add to package supplier list"
 		  (declare (ignore rest))
 		  (pushnew (list id name) *trusted-uids*))))
 	    (return-from verify t))
-        (install-anyways (&rest rest)
-	                       :report "Don't check GPG signature for this package"
-                               (declare (ignore rest))
-	                       (return-from verify t))
-        (retry-gpg-check (&rest args)
-                         :report "Retry GPG check \(e.g., after downloading the key\)"
-                         (declare (ignore args))
-                         nil)))))
+        (install-anyways
+	    (&rest rest)
+	  :report "Don't check GPG signature for this package"
+	  (declare (ignore rest))
+	  (return-from verify t))
+        (retry-gpg-check
+	    (&rest args)
+	  :report "Retry GPG check \(e.g., after downloading the key\)"
+	  (declare (ignore args))
+	  nil)))))
 
 (defun header-value (name headers)
   "Searchers headers for name _without_ case sensitivity. Headers should be an alist mapping symbols to values; name a symbol. Returns the value if name is found or nil if it is not."
@@ -339,9 +334,16 @@
 		           (make-pathname :defaults *default-pathname-defaults*
                                           :name :wild
                                           :type "system")))
-          do (maybe-symlink-sysfile system sysfile)
-	  do (installer-msg t "Found system definition: ~A" sysfile)
-	  collect sysfile)))
+       do (maybe-symlink-sysfile system sysfile)
+       do (installer-msg t "Found system definition: ~A" sysfile)
+       do (maybe-update-central-registry sysfile)
+       collect sysfile)))
+
+(defun maybe-update-central-registry (sysfile)
+  ;; make sure that the systems we install are accessible in case 
+  ;; asdf-install:*locations* and asdf:*central-registry* are out 
+  ;; of sync
+  (add-registry-location sysfile))
 
 (defun temp-file-name (p)
   (declare (ignore p))
@@ -472,7 +474,7 @@
   #+asdf
   (let* ((asd (asdf:system-definition-pathname system))
 	 (system (asdf:find-system system))
-	 (dir (asdf::pathname-sans-name+type
+	 (dir (pathname-sans-name+type
 	       (asdf::resolve-symlinks asd))))
     (when (or (not prompt)
 	      (y-or-n-p
@@ -521,7 +523,8 @@
           (when (probe-file file)
             (return-from sysdef-source-dir-search file)))))))
 
-(defmethod asdf:find-component :around ((module (eql nil)) name &optional version)
+(defmethod asdf:find-component :around 
+    ((module (eql nil)) name &optional version)
   (declare (ignore version))
   (when (or (not *propagate-installation*) 
             (member name *systems-installed-this-time* 
@@ -554,5 +557,12 @@
 			    (truename (user-homedir-pathname)))))
          )
     (when file (load file))))
+
+;; copied from ASDF
+(defun pathname-sans-name+type (pathname)
+  "Returns a new pathname with same HOST, DEVICE, DIRECTORY as PATHNAME,
+and NIL NAME and TYPE components"
+  (make-pathname :name nil :type nil :defaults pathname))
+
 
 ;;; end of file -- install.lisp --
