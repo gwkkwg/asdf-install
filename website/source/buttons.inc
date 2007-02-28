@@ -1,0 +1,5 @@
+<a class="nav" href="http://validator.w3.org/check/referer" title="xhtml1.1"><img src="http://common-lisp.net/project/cl-containers/shared/buttons/xhtml.gif" width="80" height="15" title="valid xhtml button" alt="valid xhtml" /></a>
+<a class="nav" href="http://www.catb.org/hacker-emblem/" title="hacker"><img src="http://common-lisp.net/project/cl-containers/shared/buttons/hacker.png" width="80" height="15" title="hacker emblem" alt="hacker button" /></a>
+<a class="nav" href="http://lml2.b9.com/" title="lml2 powered"><img src="http://common-lisp.net/project/cl-containers/shared/buttons/lml2-powered.png" width="80" height="15" title="lml2 powered" alt="lml2 button" /></a>
+<a class="nav" href="http://www.lisp.org/" title="Association of Lisp Users"><img src="http://common-lisp.net/project/cl-containers/shared/buttons/lambda-lisp.png" width="80" height="15" title="ALU emblem" alt="ALU button" /></a>
+<a class="nav" href="http://common-lisp.net/" title="Common-Lisp.net"><img src="http://common-lisp.net/project/cl-containers/shared/buttons/lisp-lizard.png" width="80" height="15" title="Common-Lisp.net" alt="Common-Lisp.net button" /></a>
