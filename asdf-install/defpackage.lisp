@@ -11,7 +11,6 @@
    #:*shell-path*
    #:*proxy*
    #:*cclan-mirror*
-   #:*sbcl-home* ; Deprecated.
    #:asdf-install-dirs
    #:private-asdf-install-dirs
    #:*tar-extractors*
