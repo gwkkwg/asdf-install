@@ -156,12 +156,13 @@
   (multiple-value-bind (package-url package-file) 
       (download-url-to-temporary-file
        (download-link-for-package package-name-or-url))
-    (multiple-value-bind (signature-url signature-file) 
-	(download-url-to-temporary-file
-	 (download-link-for-signature package-url))
-      (declare (ignore signature-url))
-      (values 
-       package-file signature-file))))
+    (if (verify-gpg-signatures-p package-name-or-url)
+	(multiple-value-bind (signature-url signature-file) 
+	    (download-url-to-temporary-file
+	     (download-link-for-signature package-url))
+	  (declare (ignore signature-url))
+	  (values package-file signature-file))
+	(values package-file nil))))
   
 (defun verify-gpg-signature (file-name signature-name)
   (block verify
