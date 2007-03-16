@@ -384,51 +384,54 @@
         (declare (ignore name))
         (labels 
 	    ((one-iter (packages)
-	       (let ((installed-package-sysfiles
-		      (loop for p in (mapcar #'string packages)
-			 unless
-			 #+(or :sbcl :alisp) (probe-file p)
-			 #-(or :sbcl :alisp) (and (/= (mismatch p "http://") 7)
-						  (probe-file p))
-			 do (multiple-value-bind (package signature)
-				(download-files-for-package p)
-			      (when (verify-gpg-signatures-p p)
-				(verify-gpg-signature package signature))
-			      (installer-msg t "Installing ~A in ~A, ~A"
-					     p source system)
-			      (setf p package))
-			 append (install-package source system p)))
-		     )
-		 (declare (ignore installed-package-sysfiles))
-		 (dolist
-		     ;; 20 Mar 2006
-		     ;; only install the packages we asked for
-		     (package packages) 
-		   #+old-asdf-behavior
-		   ;; install every package we downloaded
-		   (sysfile installed-package-sysfiles)
+	       (let ((packages-to-install nil))
+		 (loop for p in (mapcar #'string packages) do
+		      (cond ((local-archive-p p)
+			     (setf packages-to-install
+				   (append packages-to-install 
+					   (install-package source system p))))
+			    (t
+			     (multiple-value-bind (package signature)
+				 (download-files-for-package p)
+			       (when (verify-gpg-signatures-p p)
+				 (verify-gpg-signature package signature))
+			       (installer-msg t "Installing ~A in ~A, ~A"
+					      p source system)
+			       (install-package source system package))
+			     (setf packages-to-install
+				   (append packages-to-install 
+					   (list p))))))
+		 (dolist (package packages-to-install)
+		   (setf package
+			 (etypecase package
+			   (symbol package)
+			   (string (intern package :asdf-install))
+			   (pathname (intern
+				      (namestring (pathname-name package))
+				      :asdf-install))))
 		   (handler-bind
 		       (
 			#+asdf
 			(asdf:missing-dependency
 			 (lambda (c) 
-			   (installer-msg t
-					  "Downloading package ~A, required by ~A~%"
-					  (asdf::missing-requires c)
-					  (asdf:component-name
-					   (asdf::missing-required-by c)))
-			   (one-iter (list
-				      (asdf::coerce-name
-				       (asdf::missing-requires c))))
+			   (installer-msg
+			    t
+			    "Downloading package ~A, required by ~A~%"
+			    (asdf::missing-requires c)
+			    (asdf:component-name
+			     (asdf::missing-required-by c)))
+			   (one-iter 
+			    (list (asdf::coerce-name 
+				   (asdf::missing-requires c))))
 			   (invoke-restart 'retry)))
 			#+mk-defsystem
 			(make:missing-component
 			 (lambda (c) 
-			   (installer-msg t
-					  "Downloading package ~A, required by ~A~%"
-					  (make:missing-component-name c)
-					  package
-					  )
+			   (installer-msg 
+			    t
+			    "Downloading package ~A, required by ~A~%"
+			    (make:missing-component-name c)
+			    package)
 			   (one-iter (list (make:missing-component-name c)))
 			   (invoke-restart 'retry))))
 		     (loop (multiple-value-bind (ret restart-p)
@@ -456,8 +459,12 @@
 	        (prin1 *trusted-uids* out))))))
       (dolist (l *temporary-files* t)
 	(when (probe-file l) (delete-file l))))
-
     (nreverse *systems-installed-this-time*)))
+
+(defun local-archive-p (package)
+  #+(or :sbcl :allegro) (probe-file package)
+  #-(or :sbcl :allegro) (and (/= (mismatch package "http://") 7)
+			   (probe-file package)))
 
 (defun load-package (package)
   #+asdf
