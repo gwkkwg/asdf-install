@@ -66,9 +66,9 @@
   (set-macro-character #\; #'|read-linefeed-eol-comment| nil *readtable*))
 
 ;; for non-SBCL we just steal this from SB-EXECUTABLE
-#-(or :sbcl :digitool)
+#-(or :digitool)
 (defvar *stream-buffer-size* 8192)
-#-(or :sbcl :digitool)
+#-(or :digitool)
 (defun copy-stream (from to)
   "Copy into TO from FROM until end of the input stream, in blocks of
 *stream-buffer-size*.  The streams should have the same element type."
@@ -92,12 +92,6 @@
         (loop (unless (setf datum (funcall reader reader-arg))
                 (return))
               (funcall writer writer-arg datum))))))
-
-#+:sbcl
-(declaim (inline copy-stream))
-#+:sbcl
-(defun copy-stream (from to)
-  (sb-executable:copy-stream from to))
 
 (defun make-stream-from-url (url)
   #+:sbcl
@@ -223,7 +217,8 @@
                                  :input nil
                                  :output :stream
                                  :wait nil)))
-      (loop for line = (read-line (ccl:external-process-output-stream proc) nil nil nil)
+      (loop for line = (read-line
+			(ccl:external-process-output-stream proc) nil nil nil)
             while line
             do (write-line line out-stream)))))
 
@@ -231,42 +226,14 @@
 (defun return-output-from-program (program args)
   (ccl::call-system (format nil "~A~{ '~A'~} 2>&1" program args)))
 
-;; why not just use DELETE-FILE?
 (defun unlink-file (pathname)
-  #+:sbcl
-  (sb-posix:unlink pathname)
-  #+:cmu
-  (unix:unix-unlink (namestring pathname))
-  #+:allegro
-  (excl.osi:unlink pathname)
-  #+(or :lispwork :clisp :openmcl :digitool)
+  ;; 20070208 gwking@metabang.com - removed lisp-specific os-level calls
+  ;; in favor of a simple delete
   (delete-file pathname))
 
 (defun symlink-files (old new)
-  #+:sbcl
-  (sb-posix:symlink old new)
-  #+:cmu
-  (unix:unix-symlink (namestring old)
-                     (namestring new))
-  #+:allegro
-  (excl.osi:symlink old new)
-  #+:lispworks
-  ;; we lose if the pathnames contain apostrophes...
-  (sys:call-system (format nil "ln -s '~A' '~A'"
-                           (namestring old)
-                           (namestring new)))
-  #+:clisp
-  (ext:run-program "ln"
-                   :arguments (append '("-s")
-                                      (list (format nil "~A" (namestring old))
-                                            (format nil "~A" (namestring new)))))
-  #+:openmcl
-  (ccl:run-program "/bin/ln" (list "-s" (namestring old) (namestring new))
-                   :wait t)
-  #+:digitool
-  (ccl::call-system (format nil "ln -s '~A' '~A'"
-                            (system-namestring old)
-                            (system-namestring new))))
+  (shell-command
+   (format nil "ln -s ~a ~a" (namestring old) (namestring new))))
 
 (defun maybe-symlink-sysfile (system sysfile)
   (declare (ignorable system sysfile))
@@ -409,7 +376,6 @@
          (error (file-to-string-as-lines (ext::process-error process))))
     (close (ext::process-output process))
     (close (ext::process-error process))
-    
     (values
      output
      error
@@ -453,6 +419,11 @@
 #+openmcl
 (defun process-exit-code (process)
   (nth-value 1 (ccl:external-process-status process)))
+
+#+digitool
+(defun shell-command (command)
+  ;; BUG: I have no idea what this returns
+  (ccl::call-system command))
 
 #+sbcl
 (defun shell-command (command)

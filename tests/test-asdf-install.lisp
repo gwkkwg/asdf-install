@@ -1,7 +1,9 @@
 (in-package #:test-asdf-install)
 
 (defvar *working-directory*
-  (translate-logical-pathname "user-home:temporary;test-asdf-install;"))
+  (asdf:system-relative-pathname 
+   'test-asdf-install 
+   "scratch"))
 
 (deftestsuite test-asdf-install ()
   ()
