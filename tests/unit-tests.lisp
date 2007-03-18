@@ -1,4 +1,4 @@
-(in-package test-asdf-install)
+(in-package #:test-asdf-install)
 
 (deftestsuite test-install-location (test-asdf-install) ())
 
