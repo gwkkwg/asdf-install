@@ -3,7 +3,7 @@
 (defvar *working-directory*
   (asdf:system-relative-pathname 
    'test-asdf-install 
-   "scratch"))
+   "scratch/"))
 
 (deftestsuite test-asdf-install ()
   ()
