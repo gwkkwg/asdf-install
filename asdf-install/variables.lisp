@@ -51,8 +51,8 @@ namestrings.")
   "A list of places to look for shell commands.")
 
 (defvar *gnu-tar-program*
-  #-(or :netbsd :freebsd) "tar"
-  #+(or :netbsd :freebsd) "gtar"
+  #-(or :netbsd :freebsd :solaris) "tar"
+  #+(or :netbsd :freebsd :solaris) "gtar"
   "Path to the GNU tar program")
 
 (eval-when (:compile-toplevel :load-toplevel :execute)

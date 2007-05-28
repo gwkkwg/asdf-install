@@ -46,7 +46,7 @@ _Update:_ Marco Antoniotti has patched ASDF-INSTALL to make it work with MK:DEFS
    [42]: #dependencies
    [43]: #url
 
-ASDF-INSTALL was originally written for the [SBCL][44] Common Lisp implementation. It has been recently ported to [CMUCL][45], [Allegro Common Lisp][46], [Xanalys LispWorks][47], and [CLISP][48] by [Edi Weitz][49]. [Marco Baringer][50] added support for [OpenMCL][51], [James Anderson][52] added support for [Macintosh Common Lisp][53] (MCL). 
+ASDF-INSTALL was originally written for the [SBCL][44] Common Lisp implementation. It has been recently ported to [CMUCL][45], [Allegro Common Lisp][46], [Xanalys LispWorks][47], and [CLISP][48] by [Edi Weitz][49]. [Marco Baringer][50] added support for [OpenMCL][51], [James Anderson][52] added support for [Macintosh Common Lisp][53] (MCL).  Douglas Crosher added support for the [Scieneer Common Lisp][56]. 
 
    [44]: http://sbcl.sf.net/
    [45]: http://www.cons.org/cmucl/
@@ -58,12 +58,12 @@ ASDF-INSTALL was originally written for the [SBCL][44] Common Lisp implementatio
    [51]: http://openmcl.clozure.com/
    [52]: http://setf.de/
    [53]: http://www.digitool.com/
+   [56]: http://www.scieneer.com/scl/
 
-It'd be nice if users of other Lisps (like [Corman Lisp][54], [ECL][55], or [Scieneer Common Lisp][56]) could provide patches to make ASDF-INSTALL available on more platforms. 
+It'd be nice if users of other Lisps (like [Corman Lisp][54], or [ECL][55], could provide patches to make ASDF-INSTALL available on more platforms. 
 
    [54]: http://www.cormanlisp.com/
    [55]: http://ecls.sourceforge.net/
-   [56]: http://www.scieneer.com/scl/
 
 The original ASDF-INSTALL is distributed with SBCL. The latest incarnation of the "portable" version is available from [Common-Lisp.net][57]. 
 
@@ -128,7 +128,7 @@ _Note:_ LispWorks 4.2 (and probably earlier versions) has a bug that prevents it
 
 #### Loading ASDF automatically
 
-We want to make sure that ASDF is loaded whenever we start our Lisp. For this we'll use an _initialization file_. Most Lisps will read and execute the contents of a certain file on startup. This file is usually located in your home directory and might be called `.clinit.cl` (for Allegro Common Lisp), `.cmucl-init` (for CMUCL), `.lispworks` (for Xanalys LispWorks), `.clisprc` (for CLISP), or `openmcl-init.lisp` (for OpenMCL). Consult your Lisp's documentation for details. 
+We want to make sure that ASDF is loaded whenever we start our Lisp. For this we'll use an _initialization file_. Most Lisps will read and execute the contents of a certain file on startup. This file is usually located in your home directory and might be called `.clinit.cl` (for Allegro Common Lisp), `.cmucl-init` (for CMUCL), `.lispworks` (for Xanalys LispWorks), `.clisprc` (for CLISP), `openmcl-init.lisp` (for OpenMCL), or `.scl-init` (for the Scieneer CL).  Consult your Lisp's documentation for details. 
 
 Open this file (create it if it doesn't exist) and add this line 
     

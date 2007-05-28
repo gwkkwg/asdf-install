@@ -52,7 +52,7 @@ _Note:_ LispWorks 4.2 (and probably earlier versions) has a bug that prevents it
 
 #### Loading ASDF automatically
 
-We want to make sure that ASDF is loaded whenever we start our Lisp. For this we'll use an _initialization file_. Most Lisps will read and execute the contents of a certain file on startup. This file is usually located in your home directory and might be called `.clinit.cl` (for Allegro Common Lisp), `.cmucl-init` (for CMUCL), `.lispworks` (for Xanalys LispWorks), `.clisprc` (for CLISP), or `openmcl-init.lisp` (for OpenMCL). Consult your Lisp's documentation for details. 
+We want to make sure that ASDF is loaded whenever we start our Lisp. For this we'll use an _initialization file_. Most Lisps will read and execute the contents of a certain file on startup. This file is usually located in your home directory and might be called `.clinit.cl` (for Allegro Common Lisp), `.cmucl-init` (for CMUCL), `.lispworks` (for Xanalys LispWorks), `.clisprc` (for CLISP), `openmcl-init.lisp` (for OpenMCL), or `.scl-init` (for the Scieneer CL).  Consult your Lisp's documentation for details. 
 
 Open this file (create it if it doesn't exist) and add this line 
     

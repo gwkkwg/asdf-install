@@ -122,11 +122,13 @@ href="http://weitz.de/">Edi Weitz</a>. <a
 href="http://www.cliki.net/Marco%20Baringer">Marco Baringer</a> added
 support for <a href="http://openmcl.clozure.com/">OpenMCL</a>, <a href="http://setf.de/">James Anderson</a> added support for <a
 href="http://www.digitool.com/">Macintosh Common Lisp</a> (MCL).
+Douglas Crosher added support for the 
+<a href="http://www.scieneer.com/scl/">Scieneer Common Lisp</a>).
+
 <p>
 It'd be nice if users of other Lisps (like <a
-href="http://www.cormanlisp.com/">Corman Lisp</a>, <a
-href="http://ecls.sourceforge.net/">ECL</a>, or <a
-href="http://www.scieneer.com/scl/">Scieneer Common Lisp</a>) could
+href="http://www.cormanlisp.com/">Corman Lisp</a>, or <a
+href="http://ecls.sourceforge.net/">ECL</a>, could
 provide patches to make ASDF-INSTALL
 available on more platforms.
 <p>
@@ -229,8 +231,9 @@ Lisps will read and execute the contents of a certain file on
 startup. This file is usually located in your home directory and might
 be called <code>.clinit.cl</code> (for Allegro Common Lisp),
 <code>.cmucl-init</code> (for CMUCL), <code>.lispworks</code> (for
-Xanalys LispWorks), <code>.clisprc</code> (for CLISP), or
-<code>openmcl-init.lisp</code> (for OpenMCL). Consult your Lisp's
+Xanalys LispWorks), <code>.clisprc</code> (for CLISP), 
+<code>openmcl-init.lisp</code> (for OpenMCL), or
+<code>.scl-init</code> (for the Scieneer CL).  Consult your Lisp's
 documentation for details.
 <p>
 Open this file (create it if it doesn't exist) and add this line

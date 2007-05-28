@@ -38,7 +38,6 @@
     #+mk-defsystem
     (mk:add-registry-location location-directory)))
 
-0
 ;;; Fixing the handling of *LOCATIONS*
 
 (defun add-locations (loc-name site system-site)
@@ -290,7 +289,7 @@
   *cygwin-bash-program*)
 
 (defun tar-arguments (source packagename)
-  #-(or :win32 :mswindows)
+  #-(or :win32 :mswindows :scl)
   (list "-C" (namestring (truename source))
 	"-xzvf" (namestring (truename packagename)))
   #+(or :win32 :mswindows)
@@ -298,7 +297,10 @@
 	"-c"
 	(format nil "\"tar -C \\\"`cygpath '~A'`\\\" -xzvf \\\"`cygpath '~A'`\\\"\""
 		(namestring (truename source))
-		(namestring (truename packagename)))))
+		(namestring (truename packagename))))
+  #+scl
+  (list "-C" (ext:unix-namestring (truename source))
+	"-xzvf" (ext:unix-namestring (truename packagename))))
 
 (defun extract-using-tar (to-dir tarball)
   (let ((tar-command (tar-command)))
@@ -490,7 +492,9 @@
 	       system asd dir))
       #-(or :win32 :mswindows)
       (delete-file asd)
-      (asdf:run-shell-command "rm -r '~A'" (namestring (truename dir)))))
+      (let ((dir (#-scl namestring #+scl ext:unix-namestring (truename dir))))
+	(when dir
+	  (asdf:run-shell-command "rm -r '~A'" dir)))))
 
   #+mk-defsystem
   (multiple-value-bind (sysfile sysfile-exists-p)

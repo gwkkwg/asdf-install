@@ -34,7 +34,7 @@ _Update:_ Marco Antoniotti has patched ASDF-INSTALL to make it work with MK:DEFS
    [42]: #dependencies
    [43]: #url
 
-ASDF-INSTALL was originally written for the [SBCL][44] Common Lisp implementation. It has been recently ported to [CMUCL][45], [Allegro Common Lisp][46], [Xanalys LispWorks][47], and [CLISP][48] by [Edi Weitz][49]. [Marco Baringer][50] added support for [OpenMCL][51], [James Anderson][52] added support for [Macintosh Common Lisp][53] (MCL). 
+ASDF-INSTALL was originally written for the [SBCL][44] Common Lisp implementation. It has been recently ported to [CMUCL][45], [Allegro Common Lisp][46], [Xanalys LispWorks][47], and [CLISP][48] by [Edi Weitz][49]. [Marco Baringer][50] added support for [OpenMCL][51], [James Anderson][52] added support for [Macintosh Common Lisp][53] (MCL).  Douglas Crosher added support for the [Scieneer Common Lisp][56].
 
    [44]: http://sbcl.sf.net/
    [45]: http://www.cons.org/cmucl/
@@ -46,12 +46,12 @@ ASDF-INSTALL was originally written for the [SBCL][44] Common Lisp implementatio
    [51]: http://openmcl.clozure.com/
    [52]: http://setf.de/
    [53]: http://www.digitool.com/
+   [56]: http://www.scieneer.com/scl/
 
-It'd be nice if users of other Lisps (like [Corman Lisp][54], [ECL][55], or [Scieneer Common Lisp][56]) could provide patches to make ASDF-INSTALL available on more platforms. 
+It'd be nice if users of other Lisps (like [Corman Lisp][54], or [ECL][55], could provide patches to make ASDF-INSTALL available on more platforms. 
 
    [54]: http://www.cormanlisp.com/
    [55]: http://ecls.sourceforge.net/
-   [56]: http://www.scieneer.com/scl/
 
 The original ASDF-INSTALL is distributed with SBCL. The latest incarnation of the "portable" version is available from [Common-Lisp.net][57]. 
 

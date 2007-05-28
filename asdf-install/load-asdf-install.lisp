@@ -4,10 +4,10 @@
 ;;; Generic loader for ASDF-INSTALL.
 
 (eval-when (:load-toplevel :execute)
-  (unless (find-package "ASDF-INSTALL-LOADER")
-    (make-package "ASDF-INSTALL-LOADER" :use '("COMMON-LISP"))))
+  (unless (find-package '#:asdf-install-loader)
+    (make-package '#:asdf-install-loader :use '(#:common-lisp))))
 
-(in-package "ASDF-INSTALL-LOADER")
+(in-package :asdf-install-loader)
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defparameter *asdf-install-directory*
@@ -66,7 +66,7 @@
       (load-and-or-compile "ASDF-INSTALL-LIBRARY:defpackage.lisp")
       (load-and-or-compile "ASDF-INSTALL-LIBRARY:port.lisp")
 
-      (unless (find-package "SPLIT-SEQUENCE")
+      (unless (find-package '#:split-sequence)
         (load-and-or-compile "ASDF-INSTALL-LIBRARY:split-sequence.lisp"))
 
       (load-and-or-compile "ASDF-INSTALL-LIBRARY:installer.lisp")
@@ -78,7 +78,7 @@
   (provide 'asdf-install)
 
   ;; To clean a minimum (and to make things difficult to debug)...
-  ;; (delete-package "ASDF-INSTALL-LOADER")
+  ;; (delete-package '#:asdf-install-loader)
   )
 
 

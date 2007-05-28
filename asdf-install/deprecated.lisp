@@ -118,12 +118,12 @@
                          nil)))))
 
 
-#+(or :sbcl :cmu)
+#+(or :sbcl :cmu :scl)
 (defun make-stream-from-gpg-command (string file-name)
   (#+:sbcl sb-ext:process-output
-   #+:cmu ext:process-output
+   #+(or :cmu :scl) ext:process-output
    (#+:sbcl sb-ext:run-program
-    #+:cmu ext:run-program
+    #+(or :cmu :scl) ext:run-program
     "gpg"
     (list
      "--status-fd" "1" "--verify" "-"

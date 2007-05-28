@@ -19,6 +19,7 @@
   #+:cmu (cdr (assoc (intern (substitute #\_ #\- name)
                              :keyword)
                      ext:*environment-list*))
+  #+:scl (cdr (assoc name ext:*environment-list* :test #'string=))
   #+:allegro (sys:getenv name)
   #+:lispworks (lw:environment-variable name)
   #+:clisp (ext:getenv name)
@@ -111,6 +112,10 @@
   #+:cmu
   (sys:make-fd-stream (ext:connect-to-inet-socket (url-host url) (url-port url))
                       :input t :output t :buffering :full)
+  #+:scl
+  (sys:make-fd-stream (ext:connect-to-inet-socket (url-host url) (url-port url))
+                      :input t :output t :buffering :full
+		      :external-format :iso-8859-1)
   #+:lispworks
   (comm:open-tcp-stream (url-host url) (url-port url)
                         #+(and :lispworks :win32) :element-type
@@ -144,7 +149,7 @@
                      (not (zerop (sb-ext:process-exit-code proc)))))
         (return-from return-output-from-program nil)))))
 
-#+:cmu
+#+(or :cmu :scl)
 (defun return-output-from-program (program args)
   (with-output-to-string (out-stream)
     (let ((proc (ext:run-program
@@ -232,8 +237,11 @@
   (delete-file pathname))
 
 (defun symlink-files (old new)
-  (shell-command
-   (format nil "ln -s ~a ~a" (namestring old) (namestring new))))
+  (let* ((old (#-scl namestring #+scl ext:unix-namestring old))
+	 (new (#-scl namestring #+scl ext:unix-namestring new #+scl nil))
+	 (command (format nil "ln -s ~a ~a" old new)))
+    (format t "~S~%" command)
+    (shell-command command)))
 
 (defun maybe-symlink-sysfile (system sysfile)
   (declare (ignorable system sysfile))
@@ -281,19 +289,21 @@
   (append 
    #+sbcl
    '(:external-format :latin1)
+   #+:scl
+   '(:external-format :iso-8859-1)
    #+(or :clisp :digitool (and :lispworks :win32))
    '(:element-type (unsigned-byte 8))))
 
 (defun download-url-to-file (url file-name)
   "Resolves url and then downloads it to file-name; returns the url actually used."
-  (destructuring-bind (response headers stream)
-      (block got
-	(loop
-	   (destructuring-bind (response headers stream) (url-connection url)
-	     (unless (member response '(301 302))	       
-	       (return-from got (list response headers stream)))
-	     (close stream)
-	     (setf url (header-value :location headers)))))
+  (multiple-value-bind (response headers stream)
+      (loop
+       (destructuring-bind (response headers stream)
+	   (url-connection url)
+	 (unless (member response '(301 302))
+	   (return (values response headers stream)))
+	 (close stream)
+	 (setf url (header-value :location headers))))
     (when (>= response 400)
       (error 'download-error :url url :response response))
     (let ((length (parse-integer (or (header-value :content-length headers) "")
@@ -366,7 +376,7 @@
    nil
    (ext:run-shell-command  command :output :terminal :wait t)))
 
-#+:cmu
+#+(or :cmu :scl)
 (defun shell-command (command)
   (let* ((process (ext:run-program
                    *shell-path*

@@ -1,5 +1,5 @@
 {include header.md}
-{set-property title ASDF-Install Tutorial}
+{set-property title "ASDF-Install Tutorial"}
 
 ## ASDF-INSTALL Tutorial
 
