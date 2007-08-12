@@ -3,9 +3,11 @@
 {set-property title ASDF-Install}
 
 <div class="header">
+
 ## ASDF-Install
 
 #### Bringing Lisp Libraries to you
+
 </div>
 <div class="contents">
 <div class="system-links">
@@ -15,6 +17,7 @@
   * [System Tests][tr]
 </div>
 <div class="system-description">
+
 ### What it is
 
 ASDF-Install is Common Lisp's answer to CPAN: an internet-based, dependency-chasing, installation system. ASDF-Install was originally written for SBCL by Dan Barlow and then ported by Edi Weitz and many others. It knows how to work with systems defined by either ASDF or MK-Defsystem.
@@ -31,12 +34,14 @@ The best sources of information on ASDF-Install are
   * its [CLiki page][7]
 
 <a id="mailing-lists"></a>
+
 ### Mailing Lists
 
   * [asdf-install-devel][11]: A list for questions, patches, bug reports, and so on; It's for everything.
   * You can also use the [CCLAN mailing list][12].
 
 <a href="downloads"></a>
+
 ### Where is it
 
 SBCL (since 0.8.3) and OpenMCL (since 0.14.1) come with a version of ASDF-Install. You can get the latest version with this [gzipped tar file][14]. There is also a darcs repository at:
@@ -46,6 +51,7 @@ SBCL (since 0.8.3) and OpenMCL (since 0.14.1) come with a version of ASDF-Instal
 Finally, you should be able to get the latest version using ASDF-Install itself (though you will probably need to edit your local configuration files in order to use this version.
 
 <a id="news"></a>
+
 ### What is happening
 
 <table class="system-news">
@@ -69,10 +75,7 @@ Finally, you should be able to get the latest version using ASDF-Install itself 
 
 
 </div>
-<div class="footer">
-{include buttons.inc}
-<span class="footer-text">Last updated: Sunday, 8 October 2006</span>
-</div>
+{include footer.md}
 </div>
 
    [1]: #mailing-lists
@@ -99,4 +102,4 @@ Finally, you should be able to get the latest version using ASDF-Install itself 
    [22]: http://www.lisp.org/ (Association of Lisp Users)
    [23]: http://common-lisp.net/project/cl-containers/shared/buttons/lisp-lizard.png (Common-Lisp.net)
    [24]: http://common-lisp.net/ (Common-Lisp.net)
-   [tr]: test-results.html
+   [tr]: test-report.html
