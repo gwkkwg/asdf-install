@@ -5,25 +5,30 @@
   "The path to a Bourne compatible command shell in physical pathname notation.")
 
 (eval-when (:load-toplevel :compile-toplevel :execute)
-  #+:lispworks
-  (require "comm")
   #+:allegro
   (require :osi)
   #+:allegro
   (require :socket)
   #+:digitool
-  (require :opentransport))
+  (require :opentransport)
+  #+:ecl
+  (require :sockets)
+  #+:lispworks
+  (require "comm")
+  )
 
 (defun get-env-var (name)
-  #+:sbcl (sb-ext:posix-getenv name)
+  #+:allegro (sys:getenv name)
+  #+:clisp (ext:getenv name)
   #+:cmu (cdr (assoc (intern (substitute #\_ #\- name)
                              :keyword)
                      ext:*environment-list*))
-  #+:scl (cdr (assoc name ext:*environment-list* :test #'string=))
-  #+:allegro (sys:getenv name)
+  #+:ecl (ext:getenv name)
   #+:lispworks (lw:environment-variable name)
-  #+:clisp (ext:getenv name)
-  #+(or :mcl :openmcl) (ccl::getenv name))
+  #+(or :mcl :openmcl) (ccl::getenv name)
+  #+:sbcl (sb-ext:posix-getenv name)
+  #+:scl (cdr (assoc name ext:*environment-list* :test #'string=))
+  )
 
 #-:digitool
 (defun system-namestring (pathname)
@@ -95,7 +100,7 @@
               (funcall writer writer-arg datum))))))
 
 (defun make-stream-from-url (url)
-  #+:sbcl
+  #+(or :sbcl :ecl)
   (let ((s (make-instance 'sb-bsd-sockets:inet-socket
              :type :stream
              :protocol :tcp)))
@@ -215,6 +220,15 @@
             while line
             do (write-line line out-stream)))))
 
+#+:ecl
+(defun return-output-from-program (program args)
+  (with-output-to-string (out-stream)
+    (let ((stream (ext:run-program program args :output :stream)))
+      (when stream
+	(loop for line = (ignore-errors (read-line stream nil))
+	      while line
+	      do (write-line line out-stream))))))
+
 #+:openmcl
 (defun return-output-from-program (program args)
   (with-output-to-string (out-stream)
@@ -239,7 +253,10 @@
 (defun symlink-files (old new)
   (let* ((old (#-scl namestring #+scl ext:unix-namestring old))
 	 (new (#-scl namestring #+scl ext:unix-namestring new #+scl nil))
-	 (command (format nil "ln -s ~a ~a" old new)))
+	 ;; 20070811 - thanks to Juan Jose Garcia-Ripoll for pointing
+	 ;; that ~a would wreck havoc if the working directory had a space
+	 ;; in the pathname
+	 (command (format nil "ln -s ~s ~s" old new)))
     (format t "~S~%" command)
     (shell-command command)))
 
@@ -390,6 +407,11 @@
      output
      error
      (ext::process-exit-code process))))
+
+#+ecl
+(defun shell-command (command)
+  ;; If we use run-program, we do not get exit codes
+  (values nil nil (ext:system command)))
 
 #+lispworks
 (defun shell-command (command)
