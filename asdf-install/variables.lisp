@@ -46,8 +46,9 @@ namestrings.")
 (defvar *cygwin-bash-program*
   "C:\\PROGRA~1\\Cygwin\\bin\\bash.exe")
 
-(defvar *shell-search-paths* '((:absolute "usr" "bin")
-                               (:absolute "bin"))
+;; bin first
+(defvar *shell-search-paths* '((:absolute "bin")
+                               (:absolute "usr" "bin"))
   "A list of places to look for shell commands.")
 
 (defvar *gnu-tar-program*
