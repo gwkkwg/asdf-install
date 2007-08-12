@@ -12,6 +12,7 @@
   * [Mailing Lists][1]
   * [Getting it][2]
   * [Darcs Changelog][3]
+  * [System Tests][tr]
 </div>
 <div class="system-description">
 ### What it is
@@ -98,4 +99,4 @@ Finally, you should be able to get the latest version using ASDF-Install itself 
    [22]: http://www.lisp.org/ (Association of Lisp Users)
    [23]: http://common-lisp.net/project/cl-containers/shared/buttons/lisp-lizard.png (Common-Lisp.net)
    [24]: http://common-lisp.net/ (Common-Lisp.net)
-
+   [tr]: test-results.html

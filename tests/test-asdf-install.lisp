@@ -15,6 +15,7 @@
 			 *working-directory*)
        "temporary install")))
    (*preferred-location* "temporary install")
+   (asdf-install::*private-asdf-install-dirs* "")
    (asdf:*central-registry* 
    (list 
     (merge-pathnames (make-pathname :directory '(:relative "site-systems"))
@@ -41,8 +42,11 @@
 		      (let ((r (find-restart 'install-anyways)))
 			(when r (invoke-restart r)))
 		      (error c))))
-      (ensure-same (install '(lw-compat asdf-binary-locations))
-		   '(lw-compat asdf-binary-locations))
+      (ensure-same 
+       (mapcar (lambda (s) 
+		 (string-downcase (symbol-name s)))
+	       (install '(lw-compat cl-fad)))
+       '("lw-compat" "cl-fad") :test 'equalp)
       (ensure-same handled-error-count 2))))
 
 (deftestsuite test-asdf-install-no-gpg-verification (test-asdf-install) 
@@ -67,14 +71,18 @@
 
 (addtest (test-asdf-install-no-gpg-verification)
   test-download-two-at-once
-  (ensure-same (install '(lw-compat asdf-binary-locations))
-	       '(lw-compat asdf-binary-locations)))
+  (ensure-same 
+   (mapcar (lambda (s) 
+	     (string-downcase (symbol-name s)))
+	   (install '(lw-compat asdf-binary-locations)))
+   '("lw-compat" "asdf-binary-locations") :test 'equalp))
 
 ;;;;;
 
 (deftestsuite test-with-tar-file (test-asdf-install)
   ())
 
+#+(or)
 (addtest (test-with-tar-file)
   (let ((result 
 	 (install
@@ -84,6 +92,39 @@
     (ensure-same (length result) 2)
     (ensure (member 'log5 result :test 'string-equal))
     (ensure (member 'log5-test result :test 'string-equal))))
+
+;;;;
+
+(deftestsuite space-in-working-directory (test-asdf-install)
+  ()
+  ;; ugh -- compare with test-asdf-install, basically the same code...
+  (:dynamic-variables 
+   (*working-directory* (asdf:system-relative-pathname 
+			 'test-asdf-install 
+			 "two words/"))
+   (*locations* 
+    `((,(merge-pathnames (make-pathname :directory '(:relative "site"))
+			 *working-directory*)
+	,(merge-pathnames (make-pathname :directory '(:relative "site-systems"))
+			  *working-directory*)
+	"temporary install")))
+   (*preferred-location* "temporary install")
+   (*verify-gpg-signatures* nil)
+   (asdf:*central-registry* 
+    (list 
+     (merge-pathnames (make-pathname :directory '(:relative "site-systems"))
+		      *working-directory*))))
+  (:setup 
+   (delete-directory-and-files *working-directory* :if-does-not-exist :ignore)))
+
+(addtest (space-in-working-directory)
+  test-1
+  (install 'moptilities)
+  (ensure (probe-file 
+	   (make-pathname :name "moptilities"
+			  :type "asd"
+			  :defaults (second (first *locations*))))))
+
 
 #|
 (asdf-install::local-archive-p 

@@ -31,6 +31,10 @@
                (:file "deprecated" :depends-on ("installer")))
   :in-order-to ((test-op (load-op test-asdf-install)))
   :perform (test-op :after (op c)
+		    (funcall
+		      (intern (symbol-name '#:run-tests) :lift)
+		      :config :generic))
+  #+(or) (test-op :after (op c)
                     (describe 
 		     (funcall (intern (symbol-name '#:run-tests) :lift) 
 			      :suite (intern
@@ -39,10 +43,16 @@
 	   
 (defmethod perform :after ((o load-op) (c (eql (find-system :asdf-install))))
   (let ((show-version (find-symbol
-                       (symbol-name '#:show-version-information) '#:asdf-install)))
+                       (symbol-name '#:show-version-information)
+		       '#:asdf-install)))
     (when (and show-version (fboundp show-version)) 
       (funcall show-version)))
   (provide 'asdf-install))
 
+(defmethod operation-done-p 
+    ((o test-op) (c (eql (find-system :asdf-install))))
+  nil)
+
+#+(or)
 (defmethod perform ((o test-op) (c (eql (find-system :asdf-install))))
   t)
