@@ -569,11 +569,4 @@
 			    (truename (user-homedir-pathname))))))
     (when file (load file))))
 
-;; copied from ASDF
-(defun pathname-sans-name+type (pathname)
-  "Returns a new pathname with same HOST, DEVICE, DIRECTORY as PATHNAME,
-and NIL NAME and TYPE components"
-  (make-pathname :name nil :type nil :defaults pathname))
-
-
 ;;; end of file -- install.lisp --
