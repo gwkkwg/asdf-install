@@ -11,7 +11,7 @@
   
 ## Contents
 
-{table-of-contents :start-at 2}
+{table-of-contents :start 2 :depth 3}
 
 ### Introduction
 

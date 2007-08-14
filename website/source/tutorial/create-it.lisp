@@ -59,3 +59,20 @@ The path to the GNU `tar` program as a string - the default is `"tar"`. Changing
 {set-property document-heading-for-variable "Variable"}
 
 <h6>Variable <code>*gnu-tar-program*</code></h6>
+
+
+(markdown "
+You can for example from CMUCL issue the command 
+    
+    
+    (asdf-install:install :osicat)
+    
+
+and watch how ASDF-INSTALL not only downloads and installs [Osicat][120] but also [UFFI][121].   
+   
+Fun!
+
+   [120]: http://common-lisp.net/project/osicat/
+   [121]: http://uffi.b9.com/
+
+")
