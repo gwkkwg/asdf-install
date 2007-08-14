@@ -147,3 +147,15 @@
 
 (trace asdf-install::install-package)
 |#
+
+;;;;;
+
+(deftestsuite direct-install (test-asdf-install)
+  ())
+
+(addtest (direct-install)
+  test-1
+  (asdf-install:install 
+   "http://common-lisp.net/project/cl-containers/asdf-binary-locations/asdf-binary-locations_latest.tar.gz"))
+
+
