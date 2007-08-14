@@ -112,3 +112,5 @@ namestrings.")
 (defvar *propagate-installation* nil
   "If true, then every required system will be re-asdf-installed.")
 
+(defvar *temporary-directory* 
+  (pathname-sans-name+type (user-homedir-pathname)))

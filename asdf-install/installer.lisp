@@ -357,7 +357,7 @@
 		(make-pathname
 		 :name (format nil "asdf-install-~d" i)
 		 :type "asdf-install-tmp")
-		#+:clisp (user-homedir-pathname)))
+		*temporary-directory*))
 	 (unless (probe-file pathname)
 	   (return-from temp-file-name pathname)))))
 

@@ -20,7 +20,7 @@
    #:*locations*
    #:*safe-url-prefixes*
    #:*preferred-location*
-   
+   #:*temporary-directory*
    
    ;; External entry points.   
    #:add-locations
