@@ -1,6 +1,7 @@
 (in-package #:asdf-install)
 
 (defvar *temporary-files*)
+
 (defparameter *shell-path* "/bin/sh"
   "The path to a Bourne compatible command shell in physical pathname notation.")
 

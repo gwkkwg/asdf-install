@@ -561,13 +561,12 @@
   (let ((system (asdf:find-system 'asdf-install)))
     (when system (asdf:component-version system))))
 
-;; load customizations
+;; load customizations if any
 (eval-when (:load-toplevel :execute)
   (let* ((*package* (find-package :asdf-install-customize))
          (file (probe-file (merge-pathnames
 			    (make-pathname :name ".asdf-install")
-			    (truename (user-homedir-pathname)))))
-         )
+			    (truename (user-homedir-pathname))))))
     (when file (load file))))
 
 ;; copied from ASDF

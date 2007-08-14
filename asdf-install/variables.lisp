@@ -63,9 +63,8 @@ namestrings.")
 
           ;; Add others.
           ;; #+lispworks :common-defsystem
-          ))
-          
-
+	  ;; #+gbbopen :mini-module
+          ))          
   (unless (some (lambda (defsys-tag)
                   (member defsys-tag *features*))
                 *features*)
@@ -88,7 +87,8 @@ namestrings.")
   (cond ((get-env-var "PRIVATE_ASDF_INSTALL_DIR")
           (directorify (get-env-var "PRIVATE_ASDF_INSTALL_DIR")))
         (t
-          (merge-pathnames (make-pathname :directory '(:relative ".asdf-install-dir"))
+          (merge-pathnames (make-pathname 
+			    :directory '(:relative ".asdf-install-dir"))
                            (truename (user-homedir-pathname))))))
 
 (defparameter *locations*

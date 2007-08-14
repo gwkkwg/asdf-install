@@ -33,13 +33,7 @@
   :perform (test-op :after (op c)
 		    (funcall
 		      (intern (symbol-name '#:run-tests) :lift)
-		      :config :generic))
-  #+(or) (test-op :after (op c)
-                    (describe 
-		     (funcall (intern (symbol-name '#:run-tests) :lift) 
-			      :suite (intern
-				      (symbol-name '#:test-asdf-install)
-				      :test-asdf-install)))))
+		      :config :generic)))
 	   
 (defmethod perform :after ((o load-op) (c (eql (find-system :asdf-install))))
   (let ((show-version (find-symbol
