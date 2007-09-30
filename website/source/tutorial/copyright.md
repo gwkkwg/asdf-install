@@ -3,7 +3,7 @@
 
 ### Copyright
 
-Copyright (c) 2006-2006 [Gary King][gwking]. All rights reserved. 
+Copyright (c) 2006-2007 [Gary King][gwking]. All rights reserved. 
   
 Copyright (c) 2004-2006 [Dr. Edmund Weitz][153]. All rights reserved.   
 
