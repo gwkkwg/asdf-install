@@ -20,7 +20,7 @@ In order to understand what ASDF-INSTALL does we first have to understand what A
 A similar system which precedes ASDF is [MK:DEFSYSTEM][38]. You don't need it for ASDF-INSTALL but it won't hurt to have it available for libraries which aren't aware of ASDF. However, this document makes no effort to explain how MK:DEFSYSTEM is used. See Henrik Motakef's article "[Fight The System][39]." (Unfortunately, the link seems to be dead.) 
 
    [38]: http://www.cliki.net/mk-defsystem
-   [39]: http://www.henrik-motakef.de/defsystem.html
+   [39]: http://rpgoldman.real-time.com/lisp/fight-the-system.html
 
 _Update:_ Marco Antoniotti has patched ASDF-INSTALL to make it work with MK:DEFSYSTEM as well. See the [section about MK:DEFSYSTEM][40] below.   
    
