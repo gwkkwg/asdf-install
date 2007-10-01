@@ -9,11 +9,14 @@
   :components 
   ((:module "tests"
 	    :components ((:file "package")
+			 (:file "utilities"
+				:depends-on ("package"))
 			 (:file "unit-tests"
 				:depends-on ("package" "test-asdf-install"))
 			 (:file "test-asdf-install"
 				:depends-on ("package")))))
-  :depends-on (asdf-install cl-fad lift))
+  :depends-on (:asdf-install 
+	       :lift))
 
 (defmethod perform ((o test-op) (c (eql (find-system :test-asdf-install))))
   t)
