@@ -9,25 +9,27 @@
   ()
   (:dynamic-variables 
    (*locations* 
-   `((,(merge-pathnames (make-pathname :directory '(:relative "site"))
-			*working-directory*)
-       ,(merge-pathnames (make-pathname :directory '(:relative "site-systems"))
+    `((,(merge-pathnames (make-pathname :directory '(:relative "site"))
 			 *working-directory*)
-       "temporary install")))
+	,(merge-pathnames (make-pathname :directory '(:relative "site-systems"))
+			  *working-directory*)
+	"temporary install")))
    (*preferred-location* "temporary install")
    (asdf-install::*private-asdf-install-dirs* "")
    (asdf:*central-registry* 
-   (list 
-    (merge-pathnames (make-pathname :directory '(:relative "site-systems"))
-		     *working-directory*)))))
+    (list 
+     (merge-pathnames (make-pathname :directory '(:relative "site-systems"))
+		      *working-directory*))))
+  (:setup
+   (delete-directory-and-files *working-directory* :verbose? t 
+			       :if-does-not-exist :ignore)
+   (ensure-directories-exist *working-directory*)))
 
 (deftestsuite test-asdf-install-basic-installation (test-asdf-install) 
   ()
   (:dynamic-variables 
-   (*verify-gpg-signatures* t))
-  (:setup 
-   (delete-directory-and-files *working-directory* :if-does-not-exist :ignore)))
-
+   (*verify-gpg-signatures* t)))
+   
 (addtest (test-asdf-install-basic-installation)
   test-non-existent-package
   (ensure-condition 'download-error
@@ -52,9 +54,7 @@
 (deftestsuite test-asdf-install-no-gpg-verification (test-asdf-install) 
   ()
   (:dynamic-variables 
-   (*verify-gpg-signatures* nil))
-  (:setup 
-   (delete-directory-and-files *working-directory* :if-does-not-exist :ignore)))
+   (*verify-gpg-signatures* nil)))
 
 (addtest (test-asdf-install-no-gpg-verification)
   test-non-existent-package
@@ -113,9 +113,7 @@
    (asdf:*central-registry* 
     (list 
      (merge-pathnames (make-pathname :directory '(:relative "site-systems"))
-		      *working-directory*))))
-  (:setup 
-   (delete-directory-and-files *working-directory* :if-does-not-exist :ignore)))
+		      *working-directory*)))))
 
 (addtest (space-in-working-directory)
   test-1
