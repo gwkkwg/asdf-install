@@ -9,7 +9,7 @@
 > This tutorial is intended for people who are new to Common Lisp _and_ for people who are new to ASDF-Install. It describes an easy way to install third-party libraries into a Lisp environment.
  
 <div class="note">
-This tutorial is a work in progress and a "port" of Edi Weitz's [original ASDF-Install tutorial][]. Please send e-mail to asdf-install-devel@common-lisp.net if you have any questions or find anything amiss.
+This tutorial is a work in progress and a "port" of Edi Weitz's [original ASDF-Install tutorial][]. Please send e-mail to <asdf-install-devel@common-lisp.net> if you have any questions or find anything amiss.
 </div>
 
   [original ASDF-Install tutorial]: index-save.html

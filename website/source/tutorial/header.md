@@ -1,3 +1,4 @@
+{set-property gwking-copyright-year "2007"}
 {set-property html yes}
 {set-property style-sheet style}
 

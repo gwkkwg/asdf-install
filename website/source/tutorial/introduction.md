@@ -17,7 +17,7 @@ In order to understand what ASDF-INSTALL does we first have to understand what A
    [36]: http://www.cliki.net/asdf
    [37]: http://ww.telent.net/
 
-A similar system which precedes ASDF is [MK:DEFSYSTEM][38]. You don't need it for ASDF-INSTALL but it won't hurt to have it available for libraries which aren't aware of ASDF. However, this document makes no effort to explain how MK:DEFSYSTEM is used. See Henrik Motakef's article "[Fight The System][39]." (Unfortunately, the link seems to be dead.) 
+A similar system which precedes ASDF is [MK:DEFSYSTEM][38]. You don't need it for ASDF-INSTALL but it won't hurt to have it available for libraries which aren't aware of ASDF. However, this document makes no effort to explain how MK:DEFSYSTEM is used. See Henrik Motakef's article "[Fight The System][39]." 
 
    [38]: http://www.cliki.net/mk-defsystem
    [39]: http://rpgoldman.real-time.com/lisp/fight-the-system.html
