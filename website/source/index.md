@@ -46,7 +46,7 @@ The best sources of information on ASDF-Install are
 
 SBCL (since 0.8.3) and OpenMCL (since 0.14.1) come with a version of ASDF-Install. You can get the latest version with this [gzipped tar file][14]. There is also a darcs repository at:
     
-    darcs get http://common-lisp.net/project/asdf-install/darcs/asdf-install
+    darcs get http://common-lisp.net/project/asdf-install
 
 Finally, you should be able to get the latest version using ASDF-Install itself (though you will probably need to edit your local configuration files in order to use this version.
 

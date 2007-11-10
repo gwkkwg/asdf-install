@@ -1,4 +1,4 @@
-<div id="navigation">
+<div class="navigation">
 * [contents][section-index]
 * [intro][section-introduction]
 * [setup] [section-prerequisites]
@@ -9,4 +9,3 @@
 * [license][section-license]
 
 </div>
-

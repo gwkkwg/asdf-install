@@ -20,24 +20,30 @@
 	      :additional-extensions '(docs today now))))
 
 (defun md-all ()
-  (dolist (file
-	    (directory (dsc:system-relative-pathname 
-			'asdf-install 
-			(make-pathname 
-			 :directory '(:relative :back "website" "source" 
-				      "tutorial")
-			 :name :wild
-			 :type "md"))))
-    (when (probe-file file)
-      (print file)
-      (md (pathname-name file)))))
+  (let ((wild-source
+	 (dsc:system-relative-pathname 
+	  'asdf-install 
+	  (make-pathname 
+	   :directory '(:relative :back "website" "source" "tutorial")
+	   :name :wild
+	   :type "md")))
+	(wild-target 
+	 (system-relative-pathname 
+	  'asdf-install 
+	  (make-pathname 
+	   :directory '(:relative :back "website" "output" "tutorial")
+	   :name :wild
+	   :type "html"))))
+  (markdown-many 
+   (loop for file in 
+	(directory wild-source) collect
+	(list file
+	      (translate-pathname file wild-source wild-target))) 
+   :format :html
+   :additional-extensions '(docs today now))))
 
 (md-all)
 
-(md "index")
-
-(md "foo")
-(untrace)
 
 ;;;;;;;;; what about PDF?
 

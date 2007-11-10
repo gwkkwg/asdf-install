@@ -1,4 +1,4 @@
- {include header.md}
+{include resources/header.md}
 {set-property title "Changelog | ASDF-Install Tutorial"}
 
 ### Changelog
@@ -30,4 +30,4 @@
     2004-01-13 Mentioned OpenMCL support (Marco Baringer), added some SBCL exceptions, added clarification about Windows, minor edits, changes by Dan Barlow
     2004-01-12 Initial version
    
-{include footer.md}
+{include resources/footer.md}

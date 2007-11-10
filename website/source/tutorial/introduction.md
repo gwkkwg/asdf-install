@@ -1,4 +1,4 @@
-{include header.md}
+{include resources/header.md}
 {set-property title "Introduction | ASDF-Install Tutorial"}
 
 ### Introduction
@@ -9,6 +9,7 @@ If you're reading this you're probably already convinced that Common Lisp is a v
 
 Hitherto these libraries had to be installed manually, an often complex process. However, many library authors are now packaging their systems using the ASDF-INSTALL standard, allowing for automatic installation on any Lisp system that supports it.   
    
+{anchor #asdf}
 
 ### What is ASDF?
 
@@ -22,17 +23,15 @@ A similar system which precedes ASDF is [MK:DEFSYSTEM][38]. You don't need it fo
    [38]: http://www.cliki.net/mk-defsystem
    [39]: http://rpgoldman.real-time.com/lisp/fight-the-system.html
 
-_Update:_ Marco Antoniotti has patched ASDF-INSTALL to make it work with MK:DEFSYSTEM as well. See the [section about MK:DEFSYSTEM][40] below.   
+_Update:_ Marco Antoniotti has patched ASDF-INSTALL to make it work with MK:DEFSYSTEM as well. See the [section about MK:DEFSYSTEM][mk:defsystem] below.   
    
-   [40]: #defsystem
+{anchor asdf-install}
 
 ### What is ASDF-INSTALL?
 
-[ASDF-INSTALL][41], also written by Dan Barlow, is layered atop of ASDF and can automatically download Lisp libraries from the Internet and install them for you. It is also able to detect and [resolve dependencies][42] on other libraries. (These libraries have to be prepared for ASDF-INSTALL by their author. See more [below][43].) 
+[ASDF-INSTALL][41], also written by Dan Barlow, is layered atop of ASDF and can automatically download Lisp libraries from the Internet and install them for you. It is also able to detect and [resolve dependencies][dependencies] on other libraries. (These libraries have to be prepared for ASDF-INSTALL by their author. See more [below][using-a-library].) 
 
    [41]: http://www.cliki.net/asdf-install
-   [42]: #dependencies
-   [43]: #url
 
 ASDF-INSTALL was originally written for the [SBCL][44] Common Lisp implementation. It has been recently ported to [CMUCL][45], [Allegro Common Lisp][46], [Xanalys LispWorks][47], and [CLISP][48] by [Edi Weitz][49]. [Marco Baringer][50] added support for [OpenMCL][51], [James Anderson][52] added support for [Macintosh Common Lisp][53] (MCL).  Douglas Crosher added support for the [Scieneer Common Lisp][56].
 
@@ -65,4 +64,4 @@ This tutorial and the portable version of ASDF-INSTALL were originally started b
    [59]: http://weitz.de/
    [60]: http://www.cliki.net/Gary%20King
 
-{include footer.md}
+{include resources/footer.md}

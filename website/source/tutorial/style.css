@@ -1,19 +1,18 @@
-pre { padding:5px; background-color:#e0e0e0;
-	overflow: auto;
-}
-
 body {
 	background: white;
 	margin: 2px;
-	padding-left: 3em;
-	padding-right: 3em;
+	padding-left: 4em;
+	padding-right: 4em;
 }
 
-.note {
-	border: 2px inset gray;
-	padding: 0.5em;
-	margin-right: 2em;
-	margin-left: 2em;
+pre { 
+	padding: 1em; 
+	margin-left: 3em;
+	margin-right: 3em;
+	background-color: green;
+	overflow: auto;
+	color: white;
+	font: 10pt "Courier New", Courier, mono;
 }
 
 #footer {
@@ -30,7 +29,7 @@ body {
 	margin-bottom: 1em;
 }
 
-#navigation li {
+.navigation li {
 	display: inline;
 	border-right-style: dotted;
 	border-right-width: 1px;
@@ -42,7 +41,7 @@ body {
 	margin-right: 1em;
 }
 
-#navigation {
+.navigation {
 	text-align: center;
 }
 
@@ -60,14 +59,17 @@ a:active { text-decoration: underline; }
 a:hover { text-decoration: underline; }
 
 .note {
-	
+	border: 2px inset gray;
+	padding: 0.5em;
+	margin-right: 2em;
+	margin-left: 2em;
 }
 
 .windows {
 	
 }
 
-/*<group=toc>*/
+/* @group toc */
 
 .table-of-contents {
 	font-size: 90%;
@@ -97,4 +99,4 @@ a:hover { text-decoration: underline; }
 	left: 8px;
 }
 	
-/*</group>*/
+/* @end */
