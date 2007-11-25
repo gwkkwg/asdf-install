@@ -13,8 +13,6 @@ Apart from one of the [supported Lisps][asdf-install] you will need [GnuPG][62] 
 (GnuPG is not strictly necessary - see [below][*verify-gpg-signatures*] - but it is recommended
 if you want to be somewhat more sure that you're not installing arbitrary malicious code.) 
 
-   [*verify-gpg-signatures*]: reference.html#*verify-gpg-signatures*
-
 _Update:_ Beginning with version 0.14.1 ASDF-INSTALL is already included with the OpenMCL distribution. Also, AllegroCL 7.0 and higher include ASDF (but not ASDF-INSTALL.) See below for details. 
 
 _Note:_ ASDF-Install will not work with MCL unless you start MCL 
@@ -30,9 +28,7 @@ _Windows note:_ If you want to use ASDF-INSTALL on Windows you must install [Cyg
    [67]: http://www.google.com/groups?selm=2gacj0Fi7moU1%40uni-berlin.de&output=gplain
    [68]: news://comp.lang.lisp
 
-Whenever I use `~/` (the Unix shell notation for the user's home directory) in the following text what is actually meant is the value of ([`USER-HOMEDIR-PATHNAME`][69]). While on Unix/Linux all implementations seem to agree what this value should be, on Windows this is not the case. Read the docs of your Lisp. 
-
-   [69]: http://www.lispworks.com/reference/HyperSpec/Body/f_user_h.htm
+Whenever I use `~/` (the Unix shell notation for the user's home directory) in the following text what is actually meant is the value of ([`USER-HOMEDIR-PATHNAME`][user-homedir-pathname]). While on Unix/Linux all implementations seem to agree what this value should be, on Windows this is not the case. Read the docs of your Lisp. 
 
 {anchor install-asdf}
 
@@ -62,10 +58,7 @@ Open this file (create it if it doesn't exist) and add this line
 where of course you have replaced `/path/where/asdf/is/located/` with the correct path to ASDF - see [last section][install-asdf]. We wrote `(load ".../asdf")` and not, say, `(load ".../asdf.x86f")` because this way your Lisp will load the compiled file if it is available and otherwise `asdf.lisp` if for some reason you didn't compile the code. 
 
 
-Why the `#-:asdf`? After ASDF has been loaded it adds the symbol `:ASDF` to the [features list][73]. Our use of the _read-time conditional_  [Sharpsign Minus][74] thus makes sure that ASDF isn't loaded a second time if it's already there. (So you can safely save and use an image with ASDF pre-loaded without changing your init file.) 
-
-   [73]: http://www.lispworks.com/reference/HyperSpec/Body/v_featur.htm
-   [74]: http://www.lispworks.com/reference/HyperSpec/Body/02_dhr.htm
+Why the `#-:asdf`? After ASDF has been loaded it adds the symbol `:ASDF` to the [features list][*features*]. Our use of the _read-time conditional_  [Sharpsign Minus][sharpsign-minus] thus makes sure that ASDF isn't loaded a second time if it's already there. (So you can safely save and use an image with ASDF pre-loaded without changing your init file.) 
 
 If you're using SBCL or OpenMCL or AllegroCL 7.0 or higher _don't_ add the line from above but use 
     
@@ -77,23 +70,17 @@ ASDF maintains a list of places where it will look for
 {anchor definitions} _system definitions_ when it is asked to
 load or compile a system. (System definitions are the files
 ending with `.asd`.) This list is stored in the {anchor
-*central-registry*} [special variable][75]
+*central-registry*} [special variable][]
 `ASDF:*CENTRAL-REGISTRY*` and you can add new directories to
 it. Open your initialization file once again and add the
 following line _after_ the line which loads ASDF:
-
- [75]:
-http://www.lispworks.com/reference/HyperSpec/Body/26_glo_s.htm#special_variable
-
 
     (pushnew "/path/to/your/registry/" asdf:*central-registry* :test #'equal)
 
 
 You can use a directory of your choice but you should make sure it exists. You can also add several of these lines with different directories so ASDF will look into each directory in turn until it has found a system definition. Use the directory `~/.asdf-install-dir/systems/` if you can't make a decision and make sure to create it. (Replace `~/` with an absolute path to your home directory because not all Lisps support the tilde notation.) We will call the directory you've chosen your _registry_ from now on. 
 
-_Note:_ It is important that you add a _directory_ here, not a file, so make sure the [namestring][76] ends with a slash! 
-
-   [76]: http://www.lispworks.com/reference/HyperSpec/Body/26_glo_n.htm#namestring
+_Note:_ It is important that you add a _directory_ here, not a file, so make sure the [namestring][hs-namestring] ends with a slash! 
 
 _Note:_ If you use ASDF alone the preferred way to deal with system definitions is to create symbolic links from the `.asd` files to your registry. However, you don't have to deal with this as ASDF-INSTALL will do that for you. 
 

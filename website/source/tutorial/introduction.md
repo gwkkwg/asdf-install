@@ -3,9 +3,7 @@
 
 ### Introduction
 
-If you're reading this you're probably already convinced that Common Lisp is a very fine programming language. However, while the [ANSI standard][35] is huge and provides tons of functionality there are a couple of things (like, say, XML parsers, web servers, GUIs, regular expressions) that aren't included and must either be provided by your particular implementation or otherwise by a third-party library. 
-
-   [35]: http://www.lispworks.com/reference/HyperSpec/
+If you're reading this you're probably already convinced that Common Lisp is a very fine programming language. However, while the [ANSI standard][hyperspec] is huge and provides tons of functionality there are a couple of things (like, say, XML parsers, web servers, GUIs, regular expressions) that aren't included and must either be provided by your particular implementation or otherwise by a third-party library. 
 
 Hitherto these libraries had to be installed manually, an often complex process. However, many library authors are now packaging their systems using the ASDF-INSTALL standard, allowing for automatic installation on any Lisp system that supports it.   
    

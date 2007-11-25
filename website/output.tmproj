@@ -3,10 +3,12 @@
 <plist version="1.0">
 <dict>
 	<key>currentDocument</key>
-	<string>darcs/asdf-install/website/output/tutorial/introduction.html</string>
+	<string>output/tutorial/install.html</string>
 	<key>documents</key>
 	<array>
 		<dict>
+			<key>expanded</key>
+			<true/>
 			<key>name</key>
 			<string>output</string>
 			<key>regexFolderFilter</key>
@@ -19,7 +21,7 @@
 	<integer>200</integer>
 	<key>metaData</key>
 	<dict>
-		<key>darcs/asdf-install/website/output/tutorial/introduction.html</key>
+		<key>output/tutorial/install.html</key>
 		<dict>
 			<key>caret</key>
 			<dict>
@@ -36,7 +38,7 @@
 	</dict>
 	<key>openDocuments</key>
 	<array>
-		<string>darcs/asdf-install/website/output/tutorial/introduction.html</string>
+		<string>output/tutorial/install.html</string>
 	</array>
 	<key>showFileHierarchyDrawer</key>
 	<true/>

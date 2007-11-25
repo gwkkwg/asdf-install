@@ -5,7 +5,7 @@
 * [install][section-install]
 * [uninstall][section-uninstall]
 * [reference][section-reference]
-* [changlog][section-changelog]
+* [changelog][section-changelog]
 * [license][section-license]
 
 </div>

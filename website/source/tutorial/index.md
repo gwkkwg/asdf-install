@@ -1,7 +1,7 @@
 {include resources/header.md}
 {set-property title "ASDF-Install Tutorial"}
 
-> ### Overview
+### Overview
 
 > This tutorial is intended for people who are new to Common Lisp _and_ for people who are new to ASDF-Install. It describes an easy way to install third-party libraries into a Lisp environment.
  

@@ -50,12 +50,10 @@ redirected to the actual download location provided by the
 library's author.
 
 _Note:_ The argument to the `ASDF-INSTALL:INSTALL` function
-is a [string designator][94], i.e. instead of `:CL-PPCRE` you
+is a [string designator][hs-string-designator], i.e. instead of `:CL-PPCRE` you
 can also use `"cl-ppcre"`. CLiki is case-insensitive and
 therefore case doesn't matter if you install a library by
 name.
-
-   [94]: http://www.lispworks.com/reference/HyperSpec/Body/26_glo_s.htm#string_designator
 
 {anchor install-by-url}
 
@@ -103,10 +101,7 @@ this.
 The third way to install a library via ASDF-INSTALL is to use
 a local tar archive (in the format described [in the last
 section][install-by-url]). In this case you use the file's
-[namestring][100]
-
- [100]:
-http://www.lispworks.com/reference/HyperSpec/Body/26_glo_n.htm#namestring
+[namestring][hs-namestring]
 
     (asdf-install:install "/path/to/library/library.tar.gz")
 
@@ -236,13 +231,11 @@ trust relationship with him but the signer wasn't found in
 your [list of valid suppliers of Lisp code][trusted-uids].
 
 As you'll have noticed, in all these cases ASDF-INSTALL
-offers the [restart][106] not to check the GPG signature in
+offers the [restart][hs-restart] not to check the GPG signature in
 this particular case. How you can select this restart depends
 on your Lisp implementation but if you select it ASDF-INSTALL
 will proceed compiling and installing the package without
 further checks for this library.
-
-   [106]: http://www.lispworks.com/reference/HyperSpec/Body/09_adb.htm
 
 In the last case (condition type `AUTHOR-NOT-TRUSTED`) you
 are also offered another restart. If you select this one the
@@ -278,7 +271,7 @@ After you've successfully executed `ASDF-INSTALL:INSTALL` you can immediately us
     
     (asdf:operate 'asdf:load-op :library-name)
 
-Here `:LIBRARY-NAME` is either the name you've used if you installed [by name][install-by-name] or it is the name of the main `.asd` file if you've installed [by URL][install-by-url] or [from a local file][installing-from-local-file]. If you're not sure about the name you have to use, you can list the contents of your [registry][114] for all libraries which are available to you. So, if your registry looks like this 
+Here `:LIBRARY-NAME` is either the name you've used if you installed [by name][install-by-name] or it is the name of the main `.asd` file if you've installed [by URL][install-by-url] or [from a local file][installing-from-local-file]. If you're not sure about the name you have to use, you can list the contents of your [registry][] for all libraries which are available to you. So, if your registry looks like this 
     
     edi@bird:~ > ls ~/.asdf-install-dir/systems/
     cl-ppcre.asd  cl-ppcre-test.asd  cl-who.asd  html-template.asd
@@ -287,9 +280,7 @@ you can substitute `:LIBRARY-NAME` with one of `:CL-PPCRE`, `:CL-PPCRE-TEST`, `:
 
    [115]: http://weitz.de/cl-ppcre/
 
-If you use SBCL you can, instead of calling `ASDF:OPERATE`, simply [`REQUIRE`][116] the library: 
-    
-   [116]: http://www.lispworks.com/reference/HyperSpec/Body/f_provid.htm
+If you use SBCL you can, instead of calling `ASDF:OPERATE`, simply [`REQUIRE`][hs-require] the library: 
 
     (require :library-name)
 
