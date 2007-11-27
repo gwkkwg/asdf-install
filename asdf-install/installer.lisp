@@ -275,38 +275,51 @@
 ;;; install-package --
 
 (defun find-shell-command (command)
-  (loop for directory in *shell-search-paths* do
-       (let ((target (make-pathname :name command :type nil
-				    :directory directory)))
-	 (when (probe-file target)
-	   (return-from find-shell-command (namestring target)))))
-  (values nil))
+  (let ((paths *shell-search-paths*))
+    ;; For backwards compatibility, push *CYGWIN-BIN-DIRECTORY* on the
+    ;; front of the path list.
+    #+(or :win32 :mswindows)
+    (push *cygwin-bin-directory* paths)
+    (loop for directory in paths do
+         (let ((target (merge-pathnames (pathname command) directory)))
+           (when (probe-file target)
+             (return-from find-shell-command (namestring target)))))
+    (values nil)))
 
 (defun tar-command ()
-  #-(or :win32 :mswindows)
-  (find-shell-command *gnu-tar-program*)
   #+(or :win32 :mswindows)
-  *cygwin-bash-program*)
+  (when *cygwin-bash-program*
+    ;; TODO: *CYGWIN-BASH-PROGRAM* is deprecated. [dwm]
+    (warn
+     "The variable *CYGWIN-BASH-PROGRAM* is deprecated.~%
+Set *GNU-TAR-PROGRAM* appropriately instead."))
+  (find-shell-command *gnu-tar-program*))
 
-(defun tar-arguments (source packagename)
+(defun tar-argument (arg)
+  "Given a filename argument for tar, massage it into our guess of the
+ correct form based on the feature list."
   #-(or :win32 :mswindows :scl)
-  (list "-C" (namestring (truename source))
-	"-xzvf" (namestring (truename packagename)))
-  #+(or :win32 :mswindows)
-  (list "-l"
-	"-c"
-	(format nil "\"tar -C \\\"`cygpath '~A'`\\\" -xzvf \\\"`cygpath '~A'`\\\"\""
-		(namestring (truename source))
-		(namestring (truename packagename))))
+  (namestring (truename arg))
   #+scl
-  (list "-C" (ext:unix-namestring (truename source))
-	"-xzvf" (ext:unix-namestring (truename packagename))))
+  (ext:unix-namestring (truename arg))
+  
+  ;; Here we assume that if we're in Windows, we're running Cygwin,
+  ;; and cygpath is available. We call out cygpath here rather than
+  ;; using shell backquoting. Relying on the shell can cause a host of
+  ;; problems with argument quoting, so we won't assume that
+  ;; RETURN-OUTPUT-FROM-PROGRAM will use a shell. [dwm]
+  #+(or :win32 :mswindows)
+  (with-input-from-string (s (return-output-from-program
+                              (find-shell-command "cygpath.exe")
+                              (list (namestring (truename arg)))))
+    (values (read-line s))))
 
 (defun extract-using-tar (to-dir tarball)
   (let ((tar-command (tar-command)))
-    (if (and tar-command (probe-file tar-command))
+    (if tar-command
 	(return-output-from-program tar-command
-				    (tar-arguments to-dir tarball))
+                                    (list "-C" (tar-argument to-dir)
+                                          "-xzvf" (tar-argument tarball)))
 	(warn "Cannot find tar command ~S." tar-command))))
 
 (defun extract (to-dir tarball)

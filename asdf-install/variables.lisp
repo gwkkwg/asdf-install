@@ -1,15 +1,28 @@
 (in-package #:asdf-install)
 
 (defun directorify (name)
-  ;; input name may or may not have a trailing #\/, but we know we
-  ;; want a directory
+  ;; On unix-like system, the input name may or may not have a
+  ;; trailing #\/, and thus be interpreted as a file rather than a
+  ;; directory. But we know we want a directory. So we assume that any
+  ;; of file name, type, or version might actually be part of the
+  ;; final directory element. This isn't 100% portable to all
+  ;; imaginable systems, but ought to be pretty good.
+  ;;
+  ;; Note that paths ending with something that looks like a file type
+  ;; will not be handled correctly. [dwm]
   (let ((path (pathname name)))
-    (if (pathname-name path)
-	(merge-pathnames
-	 (make-pathname :directory `(:relative ,(pathname-name path))
-			:name "")
-	 path)
-	path)))
+    (if (or (pathname-name path) (pathname-type path))
+        (let ((file-sans-directory
+               (namestring (make-pathname :name (pathname-name path)
+                                          :type (pathname-type path)
+                                          :version (pathname-version path)))))
+          ;; Note that make-pathname will not combine a relative
+          ;; :directory with a directory taken from a :defaults
+          ;; argument. We can only rely on merge-pathnames to do that.
+          (merge-pathnames
+           (make-pathname :directory (list :relative file-sans-directory))
+           (make-pathname :defaults path :name nil :type nil :version nil)))
+        path)))
 
 #+:digitool
 (defparameter *home-volume-name*
@@ -43,17 +56,31 @@ namestrings.")
   (pathname "C:\\PROGRA~1\\Cygwin\\bin\\"))
 
 #+(or :win32 :mswindows)
-(defvar *cygwin-bash-program*
-  "C:\\PROGRA~1\\Cygwin\\bin\\bash.exe")
+;; TODO: *CYGWIN-BASH-PROGRAM* is deprecated. [dwm]
+(defvar *cygwin-bash-program* nil)
 
 ;; bin first
-(defvar *shell-search-paths* '((:absolute "bin")
-                               (:absolute "usr" "bin"))
-  "A list of places to look for shell commands.")
+(defvar *shell-search-paths*
+  #-(or :win32 :mswindows)
+  ;; bin first
+  (list (make-pathname :directory '(:absolute "bin"))
+        (make-pathname :directory '(:absolute "usr" "bin")))
+
+  ;; On Windows, there's no notion of standard paths containing other
+  ;; than OS components. Simply use the same path that the user does.
+  #+(or :win32 :mswindows)
+  (loop
+     for path = (get-env-var "PATH")
+     then (subseq path (1+ (or (position #\; path) (1- (length path)))))
+     for elem = (subseq path 0 (position #\; path))
+     while (plusp (length elem))
+     collect (directorify elem))
+  "A list of places to look for shell commands, as pathnames.")
 
 (defvar *gnu-tar-program*
-  #-(or :netbsd :freebsd :solaris) "tar"
+  #-(or :netbsd :freebsd :solaris :win32 :mswindows) "tar"
   #+(or :netbsd :freebsd :solaris) "gtar"
+  #+(or :win32 :mswindows) "tar.exe"
   "Path to the GNU tar program")
 
 (eval-when (:compile-toplevel :load-toplevel :execute)

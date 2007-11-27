@@ -170,11 +170,13 @@
 
 #+:lispworks
 (defun return-output-from-program (program args)
+  ;; Note that if we glom the input arguments into a string and pass
+  ;; that to CALL-SYSTEM-SHOWING-OUTPUT, Lispworks will run a shell
+  ;; rather than running the program directly, and we could have
+  ;; issues with quoting of arguments (esp. on Windows). [dwm]
   (with-output-to-string (out-stream)
     (unless (zerop (sys:call-system-showing-output
-                    (format nil #-:win32 "~A~{ '~A'~}"
-                            #+:win32 "~A~{ ~A~}"
-                            program args)
+                    (cons program args)
                     :prefix ""
                     :show-cmd nil
                     :output-stream out-stream))
