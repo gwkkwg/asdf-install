@@ -55,10 +55,6 @@ namestrings.")
 (defvar *cygwin-bin-directory*
   (pathname "C:\\PROGRA~1\\Cygwin\\bin\\"))
 
-#+(or :win32 :mswindows)
-;; TODO: *CYGWIN-BASH-PROGRAM* is deprecated. [dwm]
-(defvar *cygwin-bash-program* nil)
-
 ;; bin first
 (defvar *shell-search-paths*
   #-(or :win32 :mswindows)

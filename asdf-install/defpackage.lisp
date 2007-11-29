@@ -52,8 +52,7 @@
   
   #+(or :win32 :mswindows)
   (:export
-   #:*cygwin-bin-directory*
-   #:*cygwin-bash-command*))
+   #:*cygwin-bin-directory*))
 
 (defpackage #:asdf-install-customize
   (:use #:common-lisp #:asdf-install))

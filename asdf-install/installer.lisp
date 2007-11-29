@@ -287,12 +287,6 @@
     (values nil)))
 
 (defun tar-command ()
-  #+(or :win32 :mswindows)
-  (when *cygwin-bash-program*
-    ;; TODO: *CYGWIN-BASH-PROGRAM* is deprecated. [dwm]
-    (warn
-     "The variable *CYGWIN-BASH-PROGRAM* is deprecated.~%
-Set *GNU-TAR-PROGRAM* appropriately instead."))
   (find-shell-command *gnu-tar-program*))
 
 (defun tar-argument (arg)
