@@ -50,11 +50,25 @@ SBCL (since 0.8.3) and OpenMCL (since 0.14.1) come with a version of ASDF-Instal
 
 Finally, you should be able to get the latest version using ASDF-Install itself (though you will probably need to edit your local configuration files in order to use this version.
 
+There is now an *unstable* darcs repository at
+
+    darcs get http://common-lisp.net/project/asdf-install/asdf-install-unstable
+
+This will be used to test new features before they migrate into the stable branch.
+    
 <a id="news"></a>
 
 ### What is happening
 
 <table class="system-news">
+  <tr>
+    <th>
+        2 December 2007
+    </th>
+    <td>
+        Dan Muller, Andy Cristina and Attila Lendvai greatly improve ASDF-Install's windows support. Thanks! These changes are in the *unstable* branch (see above)
+    </td>
+  </tr>
   <tr>
     <th>
       7 October 2006
