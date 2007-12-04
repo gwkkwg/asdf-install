@@ -54,7 +54,9 @@ There is now an *unstable* darcs repository at
 
     darcs get http://common-lisp.net/project/asdf-install/asdf-install-unstable
 
-This will be used to test new features before they migrate into the stable branch.
+This will be used to test new features before they migrate into the stable branch. A (signed) tarball of this repository is in
+
+    http://common-lisp.net/project/asdf-install/asdf-install-unstable/asdf-install.tar.gz
     
 <a id="news"></a>
 
