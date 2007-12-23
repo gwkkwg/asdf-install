@@ -55,8 +55,7 @@ namestrings.")
 (defvar *cygwin-bin-directory*
   (pathname "C:\\PROGRA~1\\Cygwin\\bin\\"))
 
-;; bin first
-(defvar *shell-search-paths*
+(defvar *program-directories*
   #-(or :win32 :mswindows)
   ;; bin first
   (list (make-pathname :directory '(:absolute "bin"))

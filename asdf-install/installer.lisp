@@ -277,9 +277,9 @@
 (defun find-program (command)
   "Returns the fully-qualified namestring of the first instance of a
 program with name COMMAND which is found in the list of directories in
-*SHELL-SEARCH-PATHS*, or NIL if it cannot be found. COMMAND should
+*PROGRAM-DIRECTORIES*, or NIL if it cannot be found. COMMAND should
 include the filename and extension, if applicable."
-  (let ((paths *shell-search-paths*))
+  (let ((paths *program-directories*))
     ;; For backwards compatibility, push *CYGWIN-BIN-DIRECTORY* on the
     ;; front of the path list.
     #+(or :win32 :mswindows)

@@ -15,7 +15,7 @@
    #:private-asdf-install-dirs          ; TODO: Undocumented
    #:*tar-extractors*                   ; TODO: Undocumented
 
-   #:*shell-search-paths*               ; TODO: Undocumented
+   #:*program-directories*              ; TODO: Undocumented
    #:*verify-gpg-signatures*
    #:*locations*
    #:*safe-url-prefixes*
