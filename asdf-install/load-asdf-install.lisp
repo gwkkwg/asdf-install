@@ -69,10 +69,8 @@
       (unless (find-package '#:split-sequence)
         (load-and-or-compile "ASDF-INSTALL-LIBRARY:split-sequence.lisp"))
 
+      (load-and-or-compile "ASDF-INSTALL-LIBRARY:variables.lisp")
       (load-and-or-compile "ASDF-INSTALL-LIBRARY:installer.lisp")
-
-      ;; (load-and-or-compile "ASDF-INSTALL-LIBRARY:loader.lisp")
-
       ))
   (pushnew :asdf-install *features*)
   (provide 'asdf-install)
