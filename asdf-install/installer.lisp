@@ -298,7 +298,7 @@ include the filename and extension, if applicable."
   (ext:unix-namestring (truename arg))
   
   ;; Here we assume that if we're in Windows, we're running Cygwin,
-  ;; and cygpath is available. We call out cygpath here rather than
+  ;; and cygpath is available. We call out to cygpath here rather than
   ;; using shell backquoting. Relying on the shell can cause a host of
   ;; problems with argument quoting, so we won't assume that
   ;; RETURN-OUTPUT-FROM-PROGRAM will use a shell. [dwm]

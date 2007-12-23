@@ -125,7 +125,7 @@ namestrings.")
   'extract-using-tar
   "Funcallable object to extract a tar file. First argument is the
   pathname of the destination directory, second is the namestring of
-  the tar file.")
+  the tar file. Returns the output of tar -v.")
 
 (defvar *systems-installed-this-time* nil
   "Used during installation propagation \(see *propagate-installation*\) to keep track off which systems have been installed during the current call to install.")

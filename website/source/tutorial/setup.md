@@ -18,7 +18,7 @@ _Update:_ Beginning with version 0.14.1 ASDF-INSTALL is already included with th
 _Note:_ ASDF-Install will not work with MCL unless you start MCL 
 from a terminal. 
 
-_Windows note:_ If you want to use ASDF-INSTALL on Windows you must install [Cygwin][65] first. You can also install GnuPG from the Cygwin setup program. If you want to use CLISP you currently [have to use][66] the Cygwin version (which can also be installed from the setup application). The good news is that if you use Cygwin you can pretty much pretend you're on Unix and **skip** all the _Windows notes_ below. 
+_Windows note:_ If you want to use ASDF-INSTALL on Windows you must install [Cygwin][65] first. If you use Cygwin's version of CLISP [66] (which can be installed from the Cygwin setup application) as your only Lisp system, you can pretty much pretend you're on Unix and **skip** all the _Windows notes_ below. In any case, you'll need to install the Cygwin `"tar"` and `"gnupg"` packages from the Cygwin setup program.
 
    [65]: http://www.cygwin.com/
    [66]: http://article.gmane.org/gmane.lisp.clisp.general/7891
