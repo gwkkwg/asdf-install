@@ -317,8 +317,7 @@ include the filename and extension, if applicable."
         (warn "Cannot find tar command ~S." tar-command))))
 
 (defun extract (to-dir tarball)
-  (or (some #'(lambda (extractor) (funcall extractor to-dir tarball))
-            *tar-extractors*)
+  (or (funcall *tar-extractor* to-dir tarball)
       (error "Unable to extract tarball ~A." tarball)))
 
 (defun install-package (source system packagename)

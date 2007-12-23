@@ -66,7 +66,7 @@ namestrings.")
      for elem = (subseq path 0 (position #\; path))
      while (plusp (length elem))
      collect (directorify elem))
-  "A list of places to look for shell commands, as pathnames.")
+  "A list of pathnames designating directories to search for programs.")
 
 (defvar *gnu-tar-program*
   #-(or :netbsd :freebsd :solaris :win32 :mswindows) "tar"
@@ -121,8 +121,11 @@ namestrings.")
                        *private-asdf-install-dirs*)
      "Personal installation")))
 
-(defvar *tar-extractors*
-  '(extract-using-tar))
+(defvar *tar-extractor*
+  'extract-using-tar
+  "Funcallable object to extract a tar file. First argument is the
+  pathname of the destination directory, second is the namestring of
+  the tar file.")
 
 (defvar *systems-installed-this-time* nil
   "Used during installation propagation \(see *propagate-installation*\) to keep track off which systems have been installed during the current call to install.")

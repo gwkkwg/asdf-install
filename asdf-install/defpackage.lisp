@@ -13,7 +13,7 @@
    #:*cclan-mirror*
    #:asdf-install-dirs                  ; TODO: Undocumented
    #:private-asdf-install-dirs          ; TODO: Undocumented
-   #:*tar-extractors*                   ; TODO: Undocumented
+   #:*tar-extractor*                    ; TODO: Undocumented
 
    #:*program-directories*              ; TODO: Undocumented
    #:*verify-gpg-signatures*
@@ -48,7 +48,7 @@
 
    ;; restarts
    #:install-anyways                    ; TODO: Undocumented
-   )
+   ))
   
 (defpackage #:asdf-install-customize    ; TODO: Undocumented
   (:use #:common-lisp #:asdf-install))
