@@ -274,7 +274,11 @@
 
 ;;; install-package --
 
-(defun find-shell-command (command)
+(defun find-program (command)
+  "Returns the fully-qualified namestring of the first instance of a
+program with name COMMAND which is found in the list of directories in
+*SHELL-SEARCH-PATHS*, or NIL if it cannot be found. COMMAND should
+include the filename and extension, if applicable."
   (let ((paths *shell-search-paths*))
     ;; For backwards compatibility, push *CYGWIN-BIN-DIRECTORY* on the
     ;; front of the path list.
@@ -283,11 +287,11 @@
     (loop for directory in paths do
          (let ((target (merge-pathnames (pathname command) directory)))
            (when (probe-file target)
-             (return-from find-shell-command (namestring target)))))
+             (return-from find-program (namestring target)))))
     (values nil)))
 
 (defun tar-command ()
-  (find-shell-command *gnu-tar-program*))
+  (find-program *gnu-tar-program*))
 
 (defun tar-argument (arg)
   "Given a filename argument for tar, massage it into our guess of the
@@ -304,7 +308,7 @@
   ;; RETURN-OUTPUT-FROM-PROGRAM will use a shell. [dwm]
   #+(or :win32 :mswindows)
   (with-input-from-string (s (return-output-from-program
-                              (find-shell-command "cygpath.exe")
+                              (find-program "cygpath.exe")
                               (list (namestring (truename arg)))))
     (values (read-line s))))
 
