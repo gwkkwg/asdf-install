@@ -50,10 +50,6 @@
    #:install-anyways                    ; TODO: Undocumented
    )
   
-  #+(or :win32 :mswindows)
-  (:export
-   #:*cygwin-bin-directory*))           ; TODO: Undocumented
-
 (defpackage #:asdf-install-customize    ; TODO: Undocumented
   (:use #:common-lisp #:asdf-install))
 

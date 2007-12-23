@@ -280,10 +280,6 @@ program with name COMMAND which is found in the list of directories in
 *PROGRAM-DIRECTORIES*, or NIL if it cannot be found. COMMAND should
 include the filename and extension, if applicable."
   (let ((paths *program-directories*))
-    ;; For backwards compatibility, push *CYGWIN-BIN-DIRECTORY* on the
-    ;; front of the path list.
-    #+(or :win32 :mswindows)
-    (push *cygwin-bin-directory* paths)
     (loop for directory in paths do
          (let ((target (merge-pathnames (pathname command) directory)))
            (when (probe-file target)

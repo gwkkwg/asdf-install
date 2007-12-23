@@ -51,10 +51,6 @@ namestrings.")
   (or (get-env-var "CCLAN_MIRROR")
       "http://ftp.linux.org.uk/pub/lisp/cclan/"))
 
-#+(or :win32 :mswindows)
-(defvar *cygwin-bin-directory*
-  (pathname "C:\\PROGRA~1\\Cygwin\\bin\\"))
-
 (defvar *program-directories*
   #-(or :win32 :mswindows)
   ;; bin first
