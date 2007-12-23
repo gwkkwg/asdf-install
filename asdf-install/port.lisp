@@ -82,7 +82,7 @@
   (unless (subtypep (stream-element-type to) (stream-element-type from))
     (error "Incompatible streams ~A and ~A." from to))
   (let ((buf (make-array *stream-buffer-size*
-			 :element-type (stream-element-type from))))
+                         :element-type (stream-element-type from))))
     (loop
       (let ((pos #-(or :clisp :cmu) (read-sequence buf from)
                  #+:clisp (ext:read-byte-sequence buf from :no-hang nil)
@@ -121,7 +121,7 @@
   #+:scl
   (sys:make-fd-stream (ext:connect-to-inet-socket (url-host url) (url-port url))
                       :input t :output t :buffering :full
-		      :external-format :iso-8859-1)
+                      :external-format :iso-8859-1)
   #+:lispworks
   (comm:open-tcp-stream (url-host url) (url-port url)
                         #+(and :lispworks :win32) :element-type
@@ -228,9 +228,9 @@
   (with-output-to-string (out-stream)
     (let ((stream (ext:run-program program args :output :stream)))
       (when stream
-	(loop for line = (ignore-errors (read-line stream nil))
-	      while line
-	      do (write-line line out-stream))))))
+        (loop for line = (ignore-errors (read-line stream nil))
+              while line
+              do (write-line line out-stream))))))
 
 #+:openmcl
 (defun return-output-from-program (program args)
@@ -240,7 +240,7 @@
                                  :output :stream
                                  :wait nil)))
       (loop for line = (read-line
-			(ccl:external-process-output-stream proc) nil nil nil)
+                        (ccl:external-process-output-stream proc) nil nil nil)
             while line
             do (write-line line out-stream)))))
 
@@ -255,11 +255,11 @@
 
 (defun symlink-files (old new)
   (let* ((old (#-scl namestring #+scl ext:unix-namestring old))
-	 (new (#-scl namestring #+scl ext:unix-namestring new #+scl nil))
-	 ;; 20070811 - thanks to Juan Jose Garcia-Ripoll for pointing
-	 ;; that ~a would wreck havoc if the working directory had a space
-	 ;; in the pathname
-	 (command (format nil "ln -s ~s ~s" old new)))
+         (new (#-scl namestring #+scl ext:unix-namestring new #+scl nil))
+         ;; 20070811 - thanks to Juan Jose Garcia-Ripoll for pointing
+         ;; that ~a would wreck havoc if the working directory had a space
+         ;; in the pathname
+         (command (format nil "ln -s ~s ~s" old new)))
     (format t "~S~%" command)
     (shell-command command)))
 
@@ -319,41 +319,41 @@
   (multiple-value-bind (response headers stream)
       (loop
        (destructuring-bind (response headers stream)
-	   (url-connection url)
-	 (unless (member response '(301 302))
-	   (return (values response headers stream)))
-	 (close stream)
-	 (setf url (header-value :location headers))))
+           (url-connection url)
+         (unless (member response '(301 302))
+           (return (values response headers stream)))
+         (close stream)
+         (setf url (header-value :location headers))))
     (when (>= response 400)
       (error 'download-error :url url :response response))
     (let ((length (parse-integer (or (header-value :content-length headers) "")
-				 :junk-allowed t)))
+                                 :junk-allowed t)))
       (installer-msg t "Downloading ~A bytes from ~A to ~A ..."
-		     (or length "some unknown number of")
-		     url
-		     file-name)
+                     (or length "some unknown number of")
+                     url
+                     file-name)
       (force-output)
       #+:clisp (setf (stream-element-type stream)
-		     '(unsigned-byte 8))
+                     '(unsigned-byte 8))
       (let ((ok? nil) (o nil))
-	(unwind-protect
-	     (progn
-	       (setf o (apply #'open file-name 
-			      :direction :output :if-exists :supersede
-			      (open-file-arguments)))
-	       #+(or :cmu :digitool)
-	       (copy-stream stream o)
-	       #-(or :cmu :digitool)
-	       (if length
-		   (let ((buf (make-array length
-					  :element-type
-					  (stream-element-type stream))))
-		     #-:clisp (read-sequence buf stream)
-		     #+:clisp (ext:read-byte-sequence buf stream :no-hang nil)
-		     (write-sequence buf o))
-		   (copy-stream stream o))
-	       (setf ok? t))
-	  (when o (close o :abort (null ok?))))))
+        (unwind-protect
+             (progn
+               (setf o (apply #'open file-name 
+                              :direction :output :if-exists :supersede
+                              (open-file-arguments)))
+               #+(or :cmu :digitool)
+               (copy-stream stream o)
+               #-(or :cmu :digitool)
+               (if length
+                   (let ((buf (make-array length
+                                          :element-type
+                                          (stream-element-type stream))))
+                     #-:clisp (read-sequence buf stream)
+                     #+:clisp (ext:read-byte-sequence buf stream :no-hang nil)
+                     (write-sequence buf o))
+                   (copy-stream stream o))
+               (setf ok? t))
+          (when o (close o :abort (null ok?))))))
     (close stream))
   (values url))
 
@@ -366,26 +366,26 @@
 (defun gpg-results (package signature)
   (let ((tags nil))
     (with-input-from-string
-	(gpg-stream 
-	 (shell-command (format nil "gpg --status-fd 1 --verify ~s ~s"
-				(namestring signature) (namestring package))))
+        (gpg-stream 
+         (shell-command (format nil "gpg --status-fd 1 --verify ~s ~s"
+                                (namestring signature) (namestring package))))
       (loop for l = (read-line gpg-stream nil nil)
-	 while l
-	 do (print l)
-	 when (> (mismatch l "[GNUPG:]") 6)
-	 do (destructuring-bind (_ tag &rest data)
-		(split-sequence-if (lambda (x)
-				     (find x '(#\Space #\Tab)))
-				   l)
-	      (declare (ignore _))
-	      (pushnew (cons (intern (string-upcase tag) :keyword)
-			     data) tags)))
+         while l
+         do (print l)
+         when (> (mismatch l "[GNUPG:]") 6)
+         do (destructuring-bind (_ tag &rest data)
+                (split-sequence-if (lambda (x)
+                                     (find x '(#\Space #\Tab)))
+                                   l)
+              (declare (ignore _))
+              (pushnew (cons (intern (string-upcase tag) :keyword)
+                             data) tags)))
       tags)))
 
 #+allegro
 (defun shell-command (command)
   (multiple-value-bind (output error status)
-	               (excl.osi:command-output command :whole t)
+                       (excl.osi:command-output command :whole t)
     (values output error status)))
 
 #+clisp
@@ -485,9 +485,9 @@
 (defmethod file-to-string-as-lines ((stream stream))
   (with-output-to-string (s)
     (loop for line = (read-line stream nil :eof nil) 
-	 until (eq line :eof) do
-	 (princ line s)
-	 (terpri s))))
+         until (eq line :eof) do
+         (princ line s)
+         (terpri s))))
 
 ;; copied from ASDF
 (defun pathname-sans-name+type (pathname)
@@ -495,3 +495,6 @@
 and NIL NAME and TYPE components"
   (make-pathname :name nil :type nil :defaults pathname))
 
+;;; Local variables:
+;;; indent-tabs-mode:nil
+;;; End:

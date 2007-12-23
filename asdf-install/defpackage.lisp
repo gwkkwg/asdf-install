@@ -8,29 +8,29 @@
   (:export
 
    ;; Customizable variables.
-   #:*shell-path*
+   #:*shell-path*                       ; TODO: Undocumented
    #:*proxy*
    #:*cclan-mirror*
-   #:asdf-install-dirs
-   #:private-asdf-install-dirs
-   #:*tar-extractors*
+   #:asdf-install-dirs                  ; TODO: Undocumented
+   #:private-asdf-install-dirs          ; TODO: Undocumented
+   #:*tar-extractors*                   ; TODO: Undocumented
 
-   #:*shell-search-paths*
+   #:*shell-search-paths*               ; TODO: Undocumented
    #:*verify-gpg-signatures*
    #:*locations*
    #:*safe-url-prefixes*
    #:*preferred-location*
-   #:*temporary-directory*
+   #:*temporary-directory*              ; TODO: Undocumented
    
    ;; External entry points.   
-   #:add-locations
-   #:add-registry-location
+   #:add-locations                      ; TODO: Undocumented
+   #:add-registry-location              ; TODO: Undocumented
    #:uninstall
    #:install
-   #:asdf-install-version
+   #:asdf-install-version               ; TODO: Undocumented
 
    #+(and asdf (or :win32 :mswindows))
-   #:sysdef-source-dir-search   
+   #:sysdef-source-dir-search
    
    ;; proxy authentication
    #:*proxy-user*
@@ -38,21 +38,25 @@
    
    ;; conditions
    #:download-error
-   #:signature-error
-   #:gpg-error
-   #:gpg-shell-error
+   #:signature-error                    ; TODO: Undocumented
+   #:gpg-error                          ; TODO: Undocumented
+   #:gpg-shell-error                    ; TODO: Undocumented
    #:key-not-found
    #:key-not-trusted
    #:author-not-trusted
-   #:installation-abort
+   #:installation-abort                 ; TODO: Undocumented
 
    ;; restarts
-   #:install-anyways
+   #:install-anyways                    ; TODO: Undocumented
    )
   
   #+(or :win32 :mswindows)
   (:export
-   #:*cygwin-bin-directory*))
+   #:*cygwin-bin-directory*))           ; TODO: Undocumented
 
-(defpackage #:asdf-install-customize
+(defpackage #:asdf-install-customize    ; TODO: Undocumented
   (:use #:common-lisp #:asdf-install))
+
+;;; Local variables:
+;;; indent-tabs-mode:nil
+;;; End:

@@ -12,10 +12,10 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defparameter *asdf-install-directory*
     (make-pathname :host (pathname-host *load-truename*)
-		   :device (pathname-device *load-truename*)
-		   :directory (pathname-directory *load-truename*)
-		   ;; :case :common ; Do we need this?
-		   )))
+                   :device (pathname-device *load-truename*)
+                   :directory (pathname-directory *load-truename*)
+                   ;; :case :common ; Do we need this?
+                   )))
 
 
 (defun cl-user::load-asdf-install
@@ -27,41 +27,41 @@
    )
   (when print-herald
     (format *standard-output*
-	    "~&;;; ASDF-INSTALL: Loading ASDF-INSTALL package from directory~@
+            "~&;;; ASDF-INSTALL: Loading ASDF-INSTALL package from directory~@
                ;;;               \"~A\"~2%"
-	    (namestring (pathname directory))))
+            (namestring (pathname directory))))
   (let ((directory (pathname directory)))
     (flet ((load-and-or-compile (file)
-	     (if compile-first-p
-		 (multiple-value-bind (output-truename warnings-p failure-p)
-		     (compile-file file)
-		   ;; (declare (ignore warnings-p))
-		   (when failure-p
-		     (format *standard-output*
-			     ";;; File ~S compiled~@
+             (if compile-first-p
+                 (multiple-value-bind (output-truename warnings-p failure-p)
+                     (compile-file file)
+                   ;; (declare (ignore warnings-p))
+                   (when failure-p
+                     (format *standard-output*
+                             ";;; File ~S compiled~@
                               ;;; Warnings ~S, Failure ~S.~%"
-			     output-truename
-			     warnings-p
-			     failure-p)
-		     (return-from cl-user::load-asdf-install nil)
-		     )
-		   (load output-truename :verbose load-verbose))
-		 (load file :verbose load-verbose)))
-	   )
+                             output-truename
+                             warnings-p
+                             failure-p)
+                     (return-from cl-user::load-asdf-install nil)
+                     )
+                   (load output-truename :verbose load-verbose))
+                 (load file :verbose load-verbose)))
+           )
 
       (setf (logical-pathname-translations "ASDF-INSTALL-LIBRARY")
-	    `(("**;*.*.*"
-	       ,(make-pathname
-		 :host (pathname-host directory)
-		 :device (pathname-device directory)
-		 :directory (append (pathname-directory directory)
-				    (list :wild-inferiors))))
-	      ("**;*.*"
-	       ,(make-pathname
-		 :host (pathname-host directory)
-		 :device (pathname-device directory)
-		 :directory (append (pathname-directory directory)
-				    (list :wild-inferiors))))))
+            `(("**;*.*.*"
+               ,(make-pathname
+                 :host (pathname-host directory)
+                 :device (pathname-device directory)
+                 :directory (append (pathname-directory directory)
+                                    (list :wild-inferiors))))
+              ("**;*.*"
+               ,(make-pathname
+                 :host (pathname-host directory)
+                 :device (pathname-device directory)
+                 :directory (append (pathname-directory directory)
+                                    (list :wild-inferiors))))))
 
       (load-and-or-compile "ASDF-INSTALL-LIBRARY:defpackage.lisp")
       (load-and-or-compile "ASDF-INSTALL-LIBRARY:port.lisp")
@@ -87,4 +87,6 @@
 (eval-when (:load-toplevel :execute)
   (cl-user::load-asdf-install))
 
-;;; end of file -- load-asdf-install.lisp --
+;;; Local variables:
+;;; indent-tabs-mode:nil
+;;; End:

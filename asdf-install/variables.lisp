@@ -86,7 +86,7 @@ namestrings.")
 
           ;; Add others.
           ;; #+lispworks :common-defsystem
-	  ;; #+gbbopen :mini-module
+          ;; #+gbbopen :mini-module
           ))          
   (unless (some (lambda (defsys-tag)
                   (member defsys-tag *features*))
@@ -105,13 +105,13 @@ namestrings.")
 (defvar *private-asdf-install-dirs*
   #+:sbcl
   (merge-pathnames (make-pathname :directory '(:relative ".sbcl"))
-		   (truename (user-homedir-pathname)))
+                   (truename (user-homedir-pathname)))
   #-:sbcl
   (cond ((get-env-var "PRIVATE_ASDF_INSTALL_DIR")
           (directorify (get-env-var "PRIVATE_ASDF_INSTALL_DIR")))
         (t
           (merge-pathnames (make-pathname 
-			    :directory '(:relative ".asdf-install-dir"))
+                            :directory '(:relative ".asdf-install-dir"))
                            (truename (user-homedir-pathname))))))
 
 (defparameter *locations*
@@ -137,3 +137,7 @@ namestrings.")
 
 (defvar *temporary-directory* 
   (pathname-sans-name+type (user-homedir-pathname)))
+
+;;; Local variables:
+;;; indent-tabs-mode:nil
+;;; End:

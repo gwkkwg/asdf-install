@@ -29,9 +29,9 @@
                                          (split-sequence-if (lambda (x)
                                                               (find x '(#\Space #\Tab)))
                                                             l)
-	               (declare (ignore _))
+                       (declare (ignore _))
                        (pushnew (cons (intern (string-upcase tag) :keyword)
-			              data) tags)))
+                                      data) tags)))
             (ignore-errors
              (close gpg-stream)))
           ;; test that command returned something 
@@ -43,8 +43,8 @@
           (let ((badsig (header-value :badsig tags)))
             (and badsig (error 'key-not-found :key-id badsig)))
           (let* ((good (header-value :goodsig tags))
-	         (id (first good))
-	         (name (format nil "~{~A~^ ~}" (rest good))))
+                 (id (first good))
+                 (name (format nil "~{~A~^ ~}" (rest good))))
             ;; good signature, but perhaps not trusted
             (restart-case
               (let ((trusted? (or (header-pair :trust_ultimate tags)
@@ -67,9 +67,9 @@
           (return-from verify t))
         #+Ignore
         (install-anyways (&rest rest)
-	                       :report "Don't check GPG signature for this package"
+                               :report "Don't check GPG signature for this package"
                                (declare (ignore rest))
-	                       (return-from verify t))
+                               (return-from verify t))
         (retry-gpg-check (&rest args)
                          :report "Retry GPG check \(e.g., after downloading the key\)"
                          (declare (ignore args))
@@ -214,3 +214,6 @@
     (pushnew name *temporary-files*)
     name))
 
+;;; Local variables:
+;;; indent-tabs-mode:nil
+;;; End:

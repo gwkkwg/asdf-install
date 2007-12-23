@@ -4,20 +4,20 @@
 
 (defun installer-msg (stream format-control &rest format-arguments)
   (apply #'format stream "~&;;; ASDF-INSTALL: ~@?~%"
-	 format-control format-arguments))
+         format-control format-arguments))
 
 (defun verify-gpg-signatures-p (url)
   (labels ((prefixp (prefix string)
-	     (let ((m (mismatch prefix string)))
-	       (or (not m) (>= m (length prefix))))))
+             (let ((m (mismatch prefix string)))
+               (or (not m) (>= m (length prefix))))))
     (case *verify-gpg-signatures*
       ((nil) nil)
       ((:unknown-locations)
        (notany
-	(lambda (x) (prefixp x url))
-	*safe-url-prefixes*))
+        (lambda (x) (prefixp x url))
+        *safe-url-prefixes*))
       (t t))))
-	  
+          
 (defun same-central-registry-entry-p (a b)
   (flet ((ensure-string (x)
            (typecase x
@@ -32,8 +32,8 @@
   (let ((location-directory (pathname-sans-name+type location)))
     #+asdf
     (pushnew location-directory
-	     asdf:*central-registry*
-	     :test #'same-central-registry-entry-p)
+             asdf:*central-registry*
+             :test #'same-central-registry-entry-p)
   
     #+mk-defsystem
     (mk:add-registry-location location-directory)))
@@ -61,15 +61,15 @@
 (defun url-host (url)
   (assert (string-equal url "http://" :end1 7))
   (let* ((port-start (position #\: url :start 7))
-	 (host-end (min (or (position #\/ url :start 7) (length url))
-			(or port-start (length url)))))
+         (host-end (min (or (position #\/ url :start 7) (length url))
+                        (or port-start (length url)))))
     (subseq url 7 host-end)))
 
 (defun url-port (url)
   (assert (string-equal url "http://" :end1 7))
   (let ((port-start (position #\: url :start 7)))
     (if port-start 
-	(parse-integer url :start (1+ port-start) :junk-allowed t) 80)))
+        (parse-integer url :start (1+ port-start) :junk-allowed t) 80)))
 
 ; This is from Juri Pakaste's <juri@iki.fi> base64.lisp
 (defparameter *encode-table*
@@ -111,7 +111,7 @@
   (if *proxy*
       url
       (let ((path-start (position #\/ url :start 7)))
-	(assert (and path-start) nil "url does not specify a file.")
+        (assert (and path-start) nil "url does not specify a file.")
         (subseq url path-start))))
 
 (defun url-connection (url)
@@ -156,58 +156,58 @@
       (download-url-to-temporary-file
        (download-link-for-package package-name-or-url))
     (if (verify-gpg-signatures-p package-name-or-url)
-	(multiple-value-bind (signature-url signature-file) 
-	    (download-url-to-temporary-file
-	     (download-link-for-signature package-url))
-	  (declare (ignore signature-url))
-	  (values package-file signature-file))
-	(values package-file nil))))
+        (multiple-value-bind (signature-url signature-file) 
+            (download-url-to-temporary-file
+             (download-link-for-signature package-url))
+          (declare (ignore signature-url))
+          (values package-file signature-file))
+        (values package-file nil))))
   
 (defun verify-gpg-signature (file-name signature-name)
   (block verify
     (loop
       (restart-case
-	  (let ((tags (gpg-results file-name signature-name)))
-	    ;; test that command returned something 
-	    (unless tags
-	      (error 'gpg-shell-error))
-	    ;; test for obvious key/sig problems
-	    (let ((errsig (header-value :errsig tags)))
-	      (and errsig (error 'key-not-found :key-id errsig)))
-	    (let ((badsig (header-value :badsig tags)))
-	      (and badsig (error 'key-not-found :key-id badsig)))
-	    (let* ((good (header-value :goodsig tags))
-		   (id (first good))
-		   (name (format nil "~{~A~^ ~}" (rest good))))
-	      ;; good signature, but perhaps not trusted
-	      (restart-case
-		  (let ((trusted? (or (header-pair :trust_ultimate tags)
-				      (header-pair :trust_fully tags)))
-			(in-list? (assoc id *trusted-uids* :test #'equal)))
-		    (cond ((or trusted? in-list?)
-			   ;; ok
-			   )
-			  ((not trusted?)
-			   (error 'key-not-trusted 
-				  :key-user-name name :key-id id))
-			  ((not in-list?)
-			   (error 'author-not-trusted
-				  :key-user-name name :key-id id))))
-		(add-key (&rest rest)
-		  :report "Add to package supplier list"
-		  (declare (ignore rest))
-		  (pushnew (list id name) *trusted-uids*))))
-	    (return-from verify t))
+          (let ((tags (gpg-results file-name signature-name)))
+            ;; test that command returned something 
+            (unless tags
+              (error 'gpg-shell-error))
+            ;; test for obvious key/sig problems
+            (let ((errsig (header-value :errsig tags)))
+              (and errsig (error 'key-not-found :key-id errsig)))
+            (let ((badsig (header-value :badsig tags)))
+              (and badsig (error 'key-not-found :key-id badsig)))
+            (let* ((good (header-value :goodsig tags))
+                   (id (first good))
+                   (name (format nil "~{~A~^ ~}" (rest good))))
+              ;; good signature, but perhaps not trusted
+              (restart-case
+                  (let ((trusted? (or (header-pair :trust_ultimate tags)
+                                      (header-pair :trust_fully tags)))
+                        (in-list? (assoc id *trusted-uids* :test #'equal)))
+                    (cond ((or trusted? in-list?)
+                           ;; ok
+                           )
+                          ((not trusted?)
+                           (error 'key-not-trusted 
+                                  :key-user-name name :key-id id))
+                          ((not in-list?)
+                           (error 'author-not-trusted
+                                  :key-user-name name :key-id id))))
+                (add-key (&rest rest)
+                  :report "Add to package supplier list"
+                  (declare (ignore rest))
+                  (pushnew (list id name) *trusted-uids*))))
+            (return-from verify t))
         (install-anyways
-	    (&rest rest)
-	  :report "Don't check GPG signature for this package"
-	  (declare (ignore rest))
-	  (return-from verify t))
+            (&rest rest)
+          :report "Don't check GPG signature for this package"
+          (declare (ignore rest))
+          (return-from verify t))
         (retry-gpg-check
-	    (&rest args)
-	  :report "Retry GPG check \(e.g., after downloading the key\)"
-	  (declare (ignore args))
-	  nil)))))
+            (&rest args)
+          :report "Retry GPG check \(e.g., after downloading the key\)"
+          (declare (ignore args))
+          nil)))))
 
 (defun header-value (name headers)
   "Searchers headers for name _without_ case sensitivity. Headers should be an alist mapping symbols to values; name a symbol. Returns the value if name is found or nil if it is not."
@@ -224,52 +224,52 @@
     (null t)
     ((integer 0) 
      (assert (<= 1 *preferred-location* (length *locations*)) 
-	     (*preferred-location*)
-	     'invalid-preferred-location-number-error
-	     :preferred-location *preferred-location*))
+             (*preferred-location*)
+             'invalid-preferred-location-number-error
+             :preferred-location *preferred-location*))
     ((or symbol string) 
      (assert (find *preferred-location* *locations* 
-		   :test (if (typep *preferred-location* 'symbol)
-			     #'eq #'string-equal) :key #'third)
-	     (*preferred-location*)
-	     'invalid-preferred-location-name-error 
-	     :preferred-location *preferred-location*))
+                   :test (if (typep *preferred-location* 'symbol)
+                             #'eq #'string-equal) :key #'third)
+             (*preferred-location*)
+             'invalid-preferred-location-name-error 
+             :preferred-location *preferred-location*))
     (t
      (assert nil 
-	     (*preferred-location*)
-	     'invalid-preferred-location-error 
-	     :preferred-location *preferred-location*)))
+             (*preferred-location*)
+             'invalid-preferred-location-error 
+             :preferred-location *preferred-location*)))
   *preferred-location*)
 
 (defun select-location ()
   (loop with n-locations = (length *locations*)
      for response = (progn
-		      (format t "Install where?~%")
-		      (loop for (source system name) in *locations*
-			 for i from 1
-			 do (format t "~A) ~A: ~%   System in ~A~%   Files in ~A ~%"
-				    i name system source))
-		      (format t "0) Abort installation.~% --> ")
-		      (force-output)
-		      (read))
+                      (format t "Install where?~%")
+                      (loop for (source system name) in *locations*
+                         for i from 1
+                         do (format t "~A) ~A: ~%   System in ~A~%   Files in ~A ~%"
+                                    i name system source))
+                      (format t "0) Abort installation.~% --> ")
+                      (force-output)
+                      (read))
      when (and (numberp response)
-	       (<= 1 response n-locations))
+               (<= 1 response n-locations))
      return response
      when (and (numberp response)
-	       (zerop response))
+               (zerop response))
      do (abort (make-condition 'installation-abort))))
 
 (defun install-location ()
   (validate-preferred-location)
   (let ((location-selection (or *preferred-location*
-				(select-location))))
+                                (select-location))))
     (etypecase location-selection
       (integer 
        (elt *locations* (1- location-selection)))
       ((or symbol string)
        (find location-selection *locations* :key #'third
-	     :test (if (typep location-selection 'string) 
-		      #'string-equal #'eq))))))
+             :test (if (typep location-selection 'string) 
+                      #'string-equal #'eq))))))
 
 
 ;;; install-package --
@@ -311,10 +311,10 @@
 (defun extract-using-tar (to-dir tarball)
   (let ((tar-command (tar-command)))
     (if tar-command
-	(return-output-from-program tar-command
+        (return-output-from-program tar-command
                                     (list "-C" (tar-argument to-dir)
                                           "-xzvf" (tar-argument tarball)))
-	(warn "Cannot find tar command ~S." tar-command))))
+        (warn "Cannot find tar command ~S." tar-command))))
 
 (defun extract (to-dir tarball)
   (or (some #'(lambda (extractor) (funcall extractor to-dir tarball))
@@ -326,22 +326,22 @@
   (ensure-directories-exist source)
   (ensure-directories-exist system)
   (let* ((tar (extract source packagename))
-	 (pos-slash (or (position #\/ tar)
+         (pos-slash (or (position #\/ tar)
                         (position #\Return tar)
                         (position #\Linefeed tar)))
-	 (*default-pathname-defaults*
-	  (merge-pathnames
-	   (make-pathname :directory
-			  `(:relative ,(subseq tar 0 pos-slash)))
-	   source)))
+         (*default-pathname-defaults*
+          (merge-pathnames
+           (make-pathname :directory
+                          `(:relative ,(subseq tar 0 pos-slash)))
+           source)))
     ;(princ tar)
     (loop for sysfile in (append
                           (directory
-		           (make-pathname :defaults *default-pathname-defaults*
+                           (make-pathname :defaults *default-pathname-defaults*
                                           :name :wild
                                           :type "asd"))
                           (directory
-		           (make-pathname :defaults *default-pathname-defaults*
+                           (make-pathname :defaults *default-pathname-defaults*
                                           :name :wild
                                           :type "system")))
        do (maybe-symlink-sysfile system sysfile)
@@ -359,14 +359,14 @@
   (declare (ignore p))
   (let ((pathname nil))
     (loop for i = 0 then (1+ i) do
-	 (setf pathname 
-	       (merge-pathnames
-		(make-pathname
-		 :name (format nil "asdf-install-~d" i)
-		 :type "asdf-install-tmp")
-		*temporary-directory*))
-	 (unless (probe-file pathname)
-	   (return-from temp-file-name pathname)))))
+         (setf pathname 
+               (merge-pathnames
+                (make-pathname
+                 :name (format nil "asdf-install-~d" i)
+                 :type "asdf-install-tmp")
+                *temporary-directory*))
+         (unless (probe-file pathname)
+           (return-from temp-file-name pathname)))))
 
 
 ;;; install
@@ -374,10 +374,10 @@
 
 (defun install (packages &key (propagate nil) (where *preferred-location*))
   (let* ((*preferred-location* where)
-	 (*temporary-files* nil)
+         (*temporary-files* nil)
          (trusted-uid-file 
           (merge-pathnames "trusted-uids.lisp" *private-asdf-install-dirs*))
-	 (*trusted-uids*
+         (*trusted-uids*
           (when (probe-file trusted-uid-file)
             (with-open-file (f trusted-uid-file) (read f))))
          (old-uids (copy-list *trusted-uids*))
@@ -392,88 +392,88 @@
       (destructuring-bind (source system name) (install-location)
         (declare (ignore name))
         (labels 
-	    ((one-iter (packages)
-	       (let ((packages-to-install nil))
-		 (loop for p in (mapcar #'string packages) do
-		      (cond ((local-archive-p p)
-			     (setf packages-to-install
-				   (append packages-to-install 
-					   (install-package source system p))))
-			    (t
-			     (multiple-value-bind (package signature)
-				 (download-files-for-package p)
-			       (when (verify-gpg-signatures-p p)
-				 (verify-gpg-signature package signature))
-			       (installer-msg t "Installing ~A in ~A, ~A"
-					      p source system)
-			       (install-package source system package))
-			     (setf packages-to-install
-				   (append packages-to-install 
-					   (list p))))))
-		 (dolist (package packages-to-install)
-		   (setf package
-			 (etypecase package
-			   (symbol package)
-			   (string (intern package :asdf-install))
-			   (pathname (intern
-				      (namestring (pathname-name package))
-				      :asdf-install))))
-		   (handler-bind
-		       (
-			#+asdf
-			(asdf:missing-dependency
-			 (lambda (c) 
-			   (installer-msg
-			    t
-			    "Downloading package ~A, required by ~A~%"
-			    (asdf::missing-requires c)
-			    (asdf:component-name
-			     (asdf::missing-required-by c)))
-			   (one-iter 
-			    (list (asdf::coerce-name 
-				   (asdf::missing-requires c))))
-			   (invoke-restart 'retry)))
-			#+mk-defsystem
-			(make:missing-component
-			 (lambda (c) 
-			   (installer-msg 
-			    t
-			    "Downloading package ~A, required by ~A~%"
-			    (make:missing-component-name c)
-			    package)
-			   (one-iter (list (make:missing-component-name c)))
-			   (invoke-restart 'retry))))
-		     (loop (multiple-value-bind (ret restart-p)
-			       (with-simple-restart
-				   (retry "Retry installation")
-				 (push package *systems-installed-this-time*)
-				 (load-package package))
-			     (declare (ignore ret))
-			     (unless restart-p (return)))))))))
-	  (one-iter packages)))
+            ((one-iter (packages)
+               (let ((packages-to-install nil))
+                 (loop for p in (mapcar #'string packages) do
+                      (cond ((local-archive-p p)
+                             (setf packages-to-install
+                                   (append packages-to-install 
+                                           (install-package source system p))))
+                            (t
+                             (multiple-value-bind (package signature)
+                                 (download-files-for-package p)
+                               (when (verify-gpg-signatures-p p)
+                                 (verify-gpg-signature package signature))
+                               (installer-msg t "Installing ~A in ~A, ~A"
+                                              p source system)
+                               (install-package source system package))
+                             (setf packages-to-install
+                                   (append packages-to-install 
+                                           (list p))))))
+                 (dolist (package packages-to-install)
+                   (setf package
+                         (etypecase package
+                           (symbol package)
+                           (string (intern package :asdf-install))
+                           (pathname (intern
+                                      (namestring (pathname-name package))
+                                      :asdf-install))))
+                   (handler-bind
+                       (
+                        #+asdf
+                        (asdf:missing-dependency
+                         (lambda (c) 
+                           (installer-msg
+                            t
+                            "Downloading package ~A, required by ~A~%"
+                            (asdf::missing-requires c)
+                            (asdf:component-name
+                             (asdf::missing-required-by c)))
+                           (one-iter 
+                            (list (asdf::coerce-name 
+                                   (asdf::missing-requires c))))
+                           (invoke-restart 'retry)))
+                        #+mk-defsystem
+                        (make:missing-component
+                         (lambda (c) 
+                           (installer-msg 
+                            t
+                            "Downloading package ~A, required by ~A~%"
+                            (make:missing-component-name c)
+                            package)
+                           (one-iter (list (make:missing-component-name c)))
+                           (invoke-restart 'retry))))
+                     (loop (multiple-value-bind (ret restart-p)
+                               (with-simple-restart
+                                   (retry "Retry installation")
+                                 (push package *systems-installed-this-time*)
+                                 (load-package package))
+                             (declare (ignore ret))
+                             (unless restart-p (return)))))))))
+          (one-iter packages)))
       ;;; cleanup
       (unless (equal old-uids *trusted-uids*)
         (let ((create-file-p nil))
-	  (unless (probe-file trusted-uid-file)
-	    (installer-msg t "Trusted UID file ~A does not exist"
-			   (namestring trusted-uid-file))
-	    (setf create-file-p
-		  (y-or-n-p "Do you want to create the file?")))
+          (unless (probe-file trusted-uid-file)
+            (installer-msg t "Trusted UID file ~A does not exist"
+                           (namestring trusted-uid-file))
+            (setf create-file-p
+                  (y-or-n-p "Do you want to create the file?")))
           (when (or create-file-p (probe-file trusted-uid-file))
-	    (ensure-directories-exist trusted-uid-file)
-	    (with-open-file (out trusted-uid-file
+            (ensure-directories-exist trusted-uid-file)
+            (with-open-file (out trusted-uid-file
                                  :direction :output
                                  :if-exists :supersede)
-	      (with-standard-io-syntax
-	        (prin1 *trusted-uids* out))))))
+              (with-standard-io-syntax
+                (prin1 *trusted-uids* out))))))
       (dolist (l *temporary-files* t)
-	(when (probe-file l) (delete-file l))))
+        (when (probe-file l) (delete-file l))))
     (nreverse *systems-installed-this-time*)))
 
 (defun local-archive-p (package)
   #+(or :sbcl :allegro) (probe-file package)
   #-(or :sbcl :allegro) (and (/= (mismatch package "http://") 7)
-			   (probe-file package)))
+                           (probe-file package)))
 
 (defun load-package (package)
   #+asdf
@@ -490,18 +490,18 @@
 (defun uninstall (system &optional (prompt t))
   #+asdf
   (let* ((asd (asdf:system-definition-pathname system))
-	 (system (asdf:find-system system))
-	 (dir (pathname-sans-name+type
-	       (asdf::resolve-symlinks asd))))
+         (system (asdf:find-system system))
+         (dir (pathname-sans-name+type
+               (asdf::resolve-symlinks asd))))
     (when (or (not prompt)
-	      (y-or-n-p
-	       "Delete system ~A~%asd file: ~A~%sources: ~A~%Are you sure?"
-	       system asd dir))
+              (y-or-n-p
+               "Delete system ~A~%asd file: ~A~%sources: ~A~%Are you sure?"
+               system asd dir))
       #-(or :win32 :mswindows)
       (delete-file asd)
       (let ((dir (#-scl namestring #+scl ext:unix-namestring (truename dir))))
-	(when dir
-	  (asdf:run-shell-command "rm -r '~A'" dir)))))
+        (when dir
+          (asdf:run-shell-command "rm -r '~A'" dir)))))
 
   #+mk-defsystem
   (multiple-value-bind (sysfile sysfile-exists-p)
@@ -510,9 +510,9 @@
       (let ((system (ignore-errors (mk:find-system system :error))))
         (when system
           (when (or (not prompt)
-	            (y-or-n-p
-	             "Delete system ~A.~%system file: ~A~%Are you sure?"
-	             system
+                    (y-or-n-p
+                     "Delete system ~A.~%system file: ~A~%Are you sure?"
+                     system
                      sysfile))
             (mk:clean-system system)
             (delete-file sysfile)
@@ -572,8 +572,10 @@
 (eval-when (:load-toplevel :execute)
   (let* ((*package* (find-package :asdf-install-customize))
          (file (probe-file (merge-pathnames
-			    (make-pathname :name ".asdf-install")
-			    (truename (user-homedir-pathname))))))
+                            (make-pathname :name ".asdf-install")
+                            (truename (user-homedir-pathname))))))
     (when file (load file))))
 
-;;; end of file -- install.lisp --
+;;; Local variables:
+;;; indent-tabs-mode:nil
+;;; End:
