@@ -50,8 +50,9 @@
    #:install-anyways                    ; TODO: Undocumented
    ))
   
-(defpackage #:asdf-install-customize    ; TODO: Undocumented
-  (:use #:common-lisp #:asdf-install))
+(defpackage #:asdf-install-customize
+  (:use #:common-lisp #:asdf-install)
+  (:documentation "Used internally for loading user customization file."))
 
 ;;; Local variables:
 ;;; indent-tabs-mode:nil

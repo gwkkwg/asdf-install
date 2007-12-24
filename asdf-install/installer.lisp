@@ -367,6 +367,17 @@ include the filename and extension, if applicable."
          (unless (probe-file pathname)
            (return-from temp-file-name pathname)))))
 
+(defun canonical-system-name (name)
+  "Return a canonical representation of a system name for use within
+ASDF-INSTALL."
+  ;; We assume that if a string is given, case matters, otherwise it
+  ;; does not. Some defsystems care, others don't.
+  (intern 
+   (etypecase name
+     (symbol (string-upcase (string name)))
+     (string name)
+     (pathname (string-upcase (namestring (pathname-name package)))))
+   '#:asdf-install))
 
 ;;; install
 ;;; This is the external entry point.
@@ -410,13 +421,7 @@ include the filename and extension, if applicable."
                                    (append packages-to-install 
                                            (list p))))))
                  (dolist (package packages-to-install)
-                   (setf package
-                         (etypecase package
-                           (symbol package)
-                           (string (intern package :asdf-install))
-                           (pathname (intern
-                                      (namestring (pathname-name package))
-                                      :asdf-install))))
+                   (setf package (canonical-system-name package))
                    (handler-bind
                        (
                         #+asdf
