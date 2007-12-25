@@ -101,6 +101,16 @@ This variable is initially `NIL`. If it is not `NIL` it should be a positive int
 
 _Note:_ This customization option is currently not supported in the SBCL version of ASDF-INSTALL. 
 
+#### Special variable `*SYSTEM-FILE-INSTALLER*`
+
+This variable must be set to a funcallable object that will install a
+system file so that it can be found by its defsystem. This function is
+not defsystem-specific. It will receive two arguments; a pathname
+designating a directory where the system file should be registered,
+and a pathname designating a system file to be registered. The return
+value is ignored. The default value is a function that creates a
+symbolic link on UNIX-like systems, and does nothing on Windows.
+
 {anchor asdf-install-dir}
 
 #### Environment variable `ASDF_INSTALL_DIR`

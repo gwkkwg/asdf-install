@@ -345,14 +345,14 @@ include the filename and extension, if applicable."
                            (make-pathname :defaults *default-pathname-defaults*
                                           :name :wild
                                           :type "system")))
-       do (maybe-symlink-sysfile system-directory sysfile)
+       do (funcall *system-file-installer* system-directory sysfile)
        do (installer-msg t "Found system definition: ~A" sysfile)
        do (maybe-update-central-registry sysfile)
        collect sysfile)))
 
 (defun maybe-update-central-registry (sysfile)
-  ;; make sure that the systems we install are accessible in case 
-  ;; asdf-install:*locations* and asdf:*central-registry* are out 
+  ;; make sure that the systems we install are accessible in case
+  ;; asdf-install:*locations* and asdf:*central-registry* are out
   ;; of sync
   (add-registry-location sysfile))
 

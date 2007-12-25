@@ -133,6 +133,17 @@ namestrings.")
 (defvar *propagate-installation* nil
   "If true, then every required system will be re-asdf-installed.")
 
+(defvar *system-file-installer*
+  'maybe-symlink-sysfile
+  "A funcallable object that will install a system file so that it
+  can be found by its defsystem. This function is not
+  defsystem-specific. It will receive two arguments; a pathname
+  designating a directory where the system file should be registered,
+  and a pathname designating a system file to be registered. The
+  return value is ignored. The default value is a function that
+  creates a symbolic link on UNIX-like systems, and does nothing on
+  Windows.")
+
 (defvar *temporary-directory* 
   (pathname-sans-name+type (user-homedir-pathname)))
 

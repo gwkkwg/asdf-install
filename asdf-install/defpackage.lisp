@@ -21,6 +21,7 @@
    #:*safe-url-prefixes*
    #:*preferred-location*
    #:*temporary-directory*              ; TODO: Undocumented
+   #:*system-file-installer*
    
    ;; External entry points.   
    #:add-locations                      ; TODO: Undocumented
