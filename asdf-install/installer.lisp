@@ -322,11 +322,11 @@ include the filename and extension, if applicable."
   (or (funcall *tar-extractor* to-dir tarball)
       (error "Unable to extract tarball ~A." tarball)))
 
-(defun install-package (source system packagename)
+(defun install-package (source-directory system-directory package-file-name)
   "Returns a list of system names (ASDF or MK:DEFSYSTEM) for installed systems."
-  (ensure-directories-exist source)
-  (ensure-directories-exist system)
-  (let* ((tar (extract source packagename))
+  (ensure-directories-exist source-directory)
+  (ensure-directories-exist system-directory)
+  (let* ((tar (extract source-directory package-file-name))
          (pos-slash (or (position #\/ tar)
                         (position #\Return tar)
                         (position #\Linefeed tar)))
@@ -334,7 +334,7 @@ include the filename and extension, if applicable."
           (merge-pathnames
            (make-pathname :directory
                           `(:relative ,(subseq tar 0 pos-slash)))
-           source)))
+           source-directory)))
     ;(princ tar)
     (loop for sysfile in (append
                           (directory
@@ -345,7 +345,7 @@ include the filename and extension, if applicable."
                            (make-pathname :defaults *default-pathname-defaults*
                                           :name :wild
                                           :type "system")))
-       do (maybe-symlink-sysfile system sysfile)
+       do (maybe-symlink-sysfile system-directory sysfile)
        do (installer-msg t "Found system definition: ~A" sysfile)
        do (maybe-update-central-registry sysfile)
        collect sysfile)))
