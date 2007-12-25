@@ -408,30 +408,9 @@ ASDF-INSTALL."
     (dolist (system systems-to-load)
       (setf system (canonical-system-name system))
       (handler-bind
-          (
-           #+asdf
-           (asdf:missing-dependency
+          ((need-more-packages
             (lambda (c) 
-              (installer-msg
-               t
-               "Downloading package ~A, required by ~A~%"
-               (asdf::missing-requires c)
-               (asdf:component-name
-                (asdf::missing-required-by c)))
-              (install-packages (list (asdf::coerce-name 
-                                       (asdf::missing-requires c)))
-                                source
-                                system-directory)
-              (invoke-restart 'retry)))
-           #+mk-defsystem
-           (make:missing-component
-            (lambda (c) 
-              (installer-msg 
-               t
-               "Downloading package ~A, required by ~A~%"
-               (make:missing-component-name c)
-               system)
-              (install-packages (list (make:missing-component-name c))
+              (install-packages (packages-needed c)
                                 source
                                 system-directory)
               (invoke-restart 'retry))))
@@ -490,15 +469,40 @@ ASDF-INSTALL."
   #-(or :sbcl :allegro) (and (/= (mismatch package "http://") 7)
                            (probe-file package)))
 
-(defun load-package (package)
+(defun load-package (system)
   #+asdf
-  (progn
-    (installer-msg t "Loading system ~S via ASDF." package)
-    (asdf:operate 'asdf:load-op package))
+  (handler-bind
+      ((asdf:missing-dependency
+        (lambda (c) 
+          (installer-msg
+           t
+           "Downloading package ~A, required by ~A~%"
+           (asdf::missing-requires c)
+           (asdf:component-name 
+            (asdf::missing-required-by c)))
+          (error 'need-more-packages
+                 :defsystem :asdf
+                 :failed-component (asdf::missing-required-by c)
+                 :packages-needed (list (asdf::coerce-name
+                                         (asdf::missing-requires c)))))))
+    (installer-msg t "Loading system ~S via ASDF." system)
+    (asdf:operate 'asdf:load-op system))
+       
   #+mk-defsystem
-  (progn
-    (installer-msg t "Loading system ~S via MK:DEFSYSTEM." package)
-    (mk:load-system package)))
+  (handler-bind
+      ((make:missing-component
+        (lambda (c) 
+          (installer-msg 
+           t
+           "Downloading package ~A, required by ~A~%"
+           (make:missing-component-name c)
+           system)
+          (error 'need-more-packages
+                 :defsystem :mk-defsystem
+                 :failed-component (make:missing-component-component c)
+                 :packages-needed (list (make:missing-component-name c))))))
+    (installer-msg t "Loading system ~S via MK:DEFSYSTEM." system)
+    (mk:load-system system)))
 
 ;;; uninstall --
 

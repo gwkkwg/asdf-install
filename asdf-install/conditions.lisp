@@ -80,6 +80,25 @@ in the path."))))
 (define-condition invalid-preferred-location-name-error 
     (invalid-preferred-location-error) ())
 
+(define-condition need-more-packages ()
+  ((defsystem :type symbol
+              :initarg :defsystem
+              :reader defsystem)
+   (failed-component :initarg :failed-component
+                     :reader failed-component)
+   (packages-needed :type list
+                    :initarg :packages-needed
+                    :reader packages-needed))
+  (:documentation
+   "This condition can occur when loading system, due to an inability
+ to load prerequisite subsystems. Accessor PACKAGES returns a list of
+ designators for additional packages that need to be installed before
+ the system can be successfully loaded. Accessor FAILED-COMPONEENT
+ returns a designator for the component that failed to load.  The
+ latter may or may not be the immediately dependent component; use it
+ only for diagnostic purposes. Accessor DEFSYSTEM indicates the
+ defsystem that encountered the error."))
+
 ;;; Local variables:
 ;;; indent-tabs-mode:nil
 ;;; End:
