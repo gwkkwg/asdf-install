@@ -379,6 +379,61 @@ ASDF-INSTALL."
      (pathname (string-upcase (namestring (pathname-name package)))))
    '#:asdf-install))
 
+(defun install-packages (packages source system)
+  (let ((packages-to-install nil))
+    (loop for p in (mapcar #'string packages) do
+         (cond ((local-archive-p p)
+                (setf packages-to-install
+                      (append packages-to-install 
+                              (install-package source system p))))
+               (t
+                (multiple-value-bind (package signature)
+                    (download-files-for-package p)
+                  (when (verify-gpg-signatures-p p)
+                    (verify-gpg-signature package signature))
+                  (installer-msg t "Installing ~A in ~A, ~A"
+                                 p source system)
+                  (install-package source system package))
+                (setf packages-to-install
+                      (append packages-to-install 
+                              (list p))))))
+    (dolist (package packages-to-install)
+      (setf package (canonical-system-name package))
+      (handler-bind
+          (
+           #+asdf
+           (asdf:missing-dependency
+            (lambda (c) 
+              (installer-msg
+               t
+               "Downloading package ~A, required by ~A~%"
+               (asdf::missing-requires c)
+               (asdf:component-name
+                (asdf::missing-required-by c)))
+              (install-packages (list (asdf::coerce-name 
+                                       (asdf::missing-requires c)))
+                                source
+                                system)
+              (invoke-restart 'retry)))
+           #+mk-defsystem
+           (make:missing-component
+            (lambda (c) 
+              (installer-msg 
+               t
+               "Downloading package ~A, required by ~A~%"
+               (make:missing-component-name c)
+               package)
+              (install-packages (list (make:missing-component-name c))
+                                source
+                                system)
+              (invoke-restart 'retry))))
+        (loop (multiple-value-bind (ret restart-p)
+                  (with-simple-restart
+                      (retry "Retry installation")
+                    (push package *systems-installed-this-time*)
+                    (load-package package))
+                (declare (ignore ret))
+                (unless restart-p (return))))))))
 ;;; install
 ;;; This is the external entry point.
 
@@ -401,60 +456,7 @@ ASDF-INSTALL."
     (unwind-protect
       (destructuring-bind (source system name) (install-location)
         (declare (ignore name))
-        (labels 
-            ((one-iter (packages)
-               (let ((packages-to-install nil))
-                 (loop for p in (mapcar #'string packages) do
-                      (cond ((local-archive-p p)
-                             (setf packages-to-install
-                                   (append packages-to-install 
-                                           (install-package source system p))))
-                            (t
-                             (multiple-value-bind (package signature)
-                                 (download-files-for-package p)
-                               (when (verify-gpg-signatures-p p)
-                                 (verify-gpg-signature package signature))
-                               (installer-msg t "Installing ~A in ~A, ~A"
-                                              p source system)
-                               (install-package source system package))
-                             (setf packages-to-install
-                                   (append packages-to-install 
-                                           (list p))))))
-                 (dolist (package packages-to-install)
-                   (setf package (canonical-system-name package))
-                   (handler-bind
-                       (
-                        #+asdf
-                        (asdf:missing-dependency
-                         (lambda (c) 
-                           (installer-msg
-                            t
-                            "Downloading package ~A, required by ~A~%"
-                            (asdf::missing-requires c)
-                            (asdf:component-name
-                             (asdf::missing-required-by c)))
-                           (one-iter 
-                            (list (asdf::coerce-name 
-                                   (asdf::missing-requires c))))
-                           (invoke-restart 'retry)))
-                        #+mk-defsystem
-                        (make:missing-component
-                         (lambda (c) 
-                           (installer-msg 
-                            t
-                            "Downloading package ~A, required by ~A~%"
-                            (make:missing-component-name c)
-                            package)
-                           (one-iter (list (make:missing-component-name c)))
-                           (invoke-restart 'retry))))
-                     (loop (multiple-value-bind (ret restart-p)
-                               (with-simple-restart
-                                   (retry "Retry installation")
-                                 (push package *systems-installed-this-time*)
-                                 (load-package package))
-                             (declare (ignore ret))
-                             (unless restart-p (return)))))))))
-          (one-iter packages)))
+        (install-packages packages source system))
       ;;; cleanup
       (unless (equal old-uids *trusted-uids*)
         (let ((create-file-p nil))
@@ -546,6 +548,10 @@ ASDF-INSTALL."
           (when (probe-file file)
             (return-from sysdef-source-dir-search file)))))))
 
+;;; This auxiliary method forces an ASDF system to appear to be
+;;; missing if *propagate-installation* is true, or if the system has
+;;; not been specifically installed by the current invocation of
+;;; ASDF-INSTALL:INSTALL.
 (defmethod asdf:find-component :around 
     ((module (eql nil)) name &optional version)
   (declare (ignore version))
