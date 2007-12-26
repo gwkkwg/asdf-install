@@ -25,7 +25,7 @@
 	       (:file "conditions" :depends-on ("defpackage" "variables"))
                (:file "variables" :depends-on ("port"))
 	       (:file "installer"
-                      :depends-on ("port" "split-sequence" 
+                      :depends-on ("port" "split-sequence" "conditions"
 					  #+:digitool "digitool"
 					  "conditions" "variables"))
                (:file "deprecated" :depends-on ("installer")))
