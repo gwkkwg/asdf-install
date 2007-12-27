@@ -99,7 +99,9 @@
   #+(or :abcl :digitool) (delete-file file))
 
 (defun pathname-name+type (pathname)
-  (cond ((pathname-type pathname)
+  ;; Note that pathname-type might be :UNSPECIFIC, in which case we
+  ;; must not treat it as being present!
+  (cond ((stringp (pathname-type pathname))
 	 (concatenate 
 	  'string (pathname-name pathname) "." (pathname-type pathname)))
 	(t (pathname-name pathname))))
