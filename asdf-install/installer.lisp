@@ -330,7 +330,7 @@ include the filename and extension, if applicable."
          (pos-slash (or (position #\/ tar)
                         (position #\Return tar)
                         (position #\Linefeed tar)))
-         (*default-pathname-defaults*
+         (package-dir
           (merge-pathnames
            (make-pathname :directory
                           `(:relative ,(subseq tar 0 pos-slash)))
@@ -338,11 +338,11 @@ include the filename and extension, if applicable."
     ;(princ tar)
     (loop for sysfile in (append
                           (directory
-                           (make-pathname :defaults *default-pathname-defaults*
+                           (make-pathname :defaults package-dir
                                           :name :wild
                                           :type "asd"))
                           (directory
-                           (make-pathname :defaults *default-pathname-defaults*
+                           (make-pathname :defaults package-dir
                                           :name :wild
                                           :type "system")))
        do (funcall *system-file-installer* system-directory sysfile)
