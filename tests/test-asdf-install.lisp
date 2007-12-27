@@ -15,21 +15,17 @@
   ()
   (:dynamic-variables 
    (*locations* 
-    `((,(merge-pathnames (make-pathname :directory '(:relative "site"))
-                         *working-directory*)
-        ,(merge-pathnames (make-pathname :directory '(:relative "site-systems"))
-                          *working-directory*)
-        "temporary install")))
+   `((,(merge-pathnames (make-pathname :directory '(:relative "site"))
+			*working-directory*)
+       ,(merge-pathnames (make-pathname :directory '(:relative "site-systems"))
+			 *working-directory*)
+       "temporary install")))
    (*preferred-location* "temporary install")
    (asdf-install::*private-asdf-install-dirs* "")
    (asdf:*central-registry* 
-    (list 
-     (merge-pathnames (make-pathname :directory '(:relative "site-systems"))
-                      *working-directory*))))
-  (:setup
-   (delete-directory-and-files *working-directory* :verbose? t 
-                               :if-does-not-exist :ignore)
-   (ensure-directories-exist *working-directory*)))
+   (list 
+    (merge-pathnames (make-pathname :directory '(:relative "site-systems"))
+		     *working-directory*)))))
 
 (deftestsuite test-asdf-install-basic-installation (test-asdf-install) 
   ()
@@ -117,7 +113,7 @@
    (asdf:*central-registry* 
     (list 
      (merge-pathnames (make-pathname :directory '(:relative "site-systems"))
-                      *working-directory*))))
+		      *working-directory*))))
   (:setup 
    (delete-directory-and-files *working-directory* :if-does-not-exist :ignore)))
 
