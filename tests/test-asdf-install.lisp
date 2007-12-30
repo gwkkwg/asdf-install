@@ -22,6 +22,11 @@
         "temporary install")))
    (*preferred-location* "temporary install")
    (asdf-install::*private-asdf-install-dirs* "")
+   ;; HACK: We bind this unexported variable in order to fool ASDF
+   ;; into thinking that nothing is installed. This isolates the tests
+   ;; from the environment, and from each other.
+   (asdf::*defined-systems*
+    (make-hash-table :test (hash-table-test asdf::*defined-systems*)))
    (asdf:*central-registry* 
     (list 
      (merge-pathnames (make-pathname :directory '(:relative "site-systems"))
