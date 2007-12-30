@@ -78,10 +78,10 @@
           (install 'lw-compat)))
 
 (addtest (test-asdf-install-no-gpg-verification)
-  test-download-with-dependencies
-  (ensure-install-results-same
-   '(moptilities)
-   (install 'moptilities)))
+         test-download-with-dependencies
+         (ensure-install-results-same
+          '(moptilities moptilities-test)
+          (install 'moptilities)))
 
 (addtest (test-asdf-install-no-gpg-verification)
          test-download-two-at-once
@@ -116,39 +116,10 @@
 
 
 (addtest (space-in-working-directory)
-  test-1
-  (ensure-install-results-same
-   '(moptilities)
-   (install 'moptilities)))
-
-;;;;;
-
-(deftestsuite direct-install (test-asdf-install)
-  ())
-
-(addtest (direct-install)
-  test-url
-  (ensure-install-results-same
-   '("asdf-binary-locations")
-   (install 
-    "http://common-lisp.net/project/cl-containers/asdf-binary-locations/asdf-binary-locations_latest.tar.gz")))
-
-
-(addtest (direct-install)
-  test-file
-  (ensure-install-results-same
-   '(log5 log5-test)
-   (install
-    (asdf:system-relative-pathname 
-     'test-asdf-install 
-     "../tests/data/log5.tar.gz"))))
-
-;;; Local variables:
-;;; indent-tabs-mode:nil
-;;; End:
-
-;;;;
-
+         test-1
+         (ensure-install-results-same
+          '(moptilities moptilities-test closer-mop)
+          (install 'moptilities)))
 
 #|
 (asdf-install::local-archive-p 
