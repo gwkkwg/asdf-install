@@ -211,6 +211,29 @@ either nil or the package's signature file name."
           (declare (ignore args))
           nil)))))
 
+(defun gpg-results (package signature)
+  (let ((tags nil))
+    (with-input-from-string
+        (gpg-stream 
+         (return-output-from-program
+          (find-program *gpg-program*)
+          (list "--status-fd" "1"
+                "--verify"
+                (namestring signature)
+                (namestring package))))
+      (loop for l = (read-line gpg-stream nil nil)
+         while l
+         do (print l)
+         when (> (mismatch l "[GNUPG:]") 6)
+         do (destructuring-bind (_ tag &rest data)
+                (split-sequence-if (lambda (x)
+                                     (find x '(#\Space #\Tab)))
+                                   l)
+              (declare (ignore _))
+              (pushnew (cons (intern (string-upcase tag) :keyword)
+                             data) tags)))
+      tags)))
+
 (defun header-value (name headers)
   "Searchers headers for name _without_ case sensitivity. Headers should be an alist mapping symbols to values; name a symbol. Returns the value if name is found or nil if it is not."
   (cdr (header-pair name headers)))
@@ -281,12 +304,11 @@ either nil or the package's signature file name."
 program with name COMMAND which is found in the list of directories in
 *PROGRAM-DIRECTORIES*, or NIL if it cannot be found. COMMAND should
 include the filename and extension, if applicable."
-  (let ((paths *program-directories*))
-    (loop for directory in paths do
-         (let ((target (merge-pathnames (pathname command) directory)))
-           (when (probe-file target)
-             (return-from find-program (namestring target)))))
-    (values nil)))
+  (loop for directory in *program-directories* do
+       (let ((target (merge-pathnames (pathname command) directory)))
+         (when (probe-file target)
+           (return-from find-program (namestring target)))))
+  (values nil))
 
 (defun tar-command ()
   (find-program *gnu-tar-program*))

@@ -68,11 +68,20 @@ namestrings.")
      collect (directorify elem))
   "A list of pathnames designating directories to search for programs.")
 
+(defvar *gpg-program*
+  #-(or :win32 :mswindows) "gpg"
+  #+(or :win32 :mswindows) "gpg.exe"
+  "The GPG program's namestring. May be fully qualified, otherwise
+ it is searched for in the directories listed in
+ *PROGRAM-DIRECTORIES*.")
+  
 (defvar *gnu-tar-program*
   #-(or :netbsd :freebsd :solaris :win32 :mswindows) "tar"
   #+(or :netbsd :freebsd :solaris) "gtar"
   #+(or :win32 :mswindows) "tar.exe"
-  "Path to the GNU tar program")
+  "The GNU tar program's namestring. May be fully qualified, otherwise
+ it is searched for in the directories listed in
+ *PROGRAM-DIRECTORIES*.")
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defparameter *supported-defsystems*

@@ -363,25 +363,6 @@
     (pushnew tmp *temporary-files*)
     (values (download-url-to-file url tmp) tmp)))
 
-(defun gpg-results (package signature)
-  (let ((tags nil))
-    (with-input-from-string
-        (gpg-stream 
-         (shell-command (format nil "gpg --status-fd 1 --verify ~s ~s"
-                                (namestring signature) (namestring package))))
-      (loop for l = (read-line gpg-stream nil nil)
-         while l
-         do (print l)
-         when (> (mismatch l "[GNUPG:]") 6)
-         do (destructuring-bind (_ tag &rest data)
-                (split-sequence-if (lambda (x)
-                                     (find x '(#\Space #\Tab)))
-                                   l)
-              (declare (ignore _))
-              (pushnew (cons (intern (string-upcase tag) :keyword)
-                             data) tags)))
-      tags)))
-
 #+allegro
 (defun shell-command (command)
   (multiple-value-bind (output error status)
