@@ -22,23 +22,22 @@
                #+:digitool
                (:file "digitool" :depends-on ("port"))
                
-	       (:file "conditions" :depends-on ("defpackage" "variables"))
+               (:file "conditions" :depends-on ("defpackage" "variables"))
                (:file "variables" :depends-on ("port"))
-	       (:file "installer"
+               (:file "installer"
                       :depends-on ("port" "split-sequence" "conditions"
-					  #+:digitool "digitool"
-					  "conditions" "variables"))
-               (:file "deprecated" :depends-on ("installer")))
+                                          #+:digitool "digitool"
+                                          "conditions" "variables")))
   :in-order-to ((test-op (load-op test-asdf-install)))
   :perform (test-op :after (op c)
-		    (funcall
-		      (intern (symbol-name '#:run-tests) :lift)
-		      :config :generic)))
-	   
+                    (funcall
+                      (intern (symbol-name '#:run-tests) :lift)
+                      :config :generic)))
+           
 (defmethod perform :after ((o load-op) (c (eql (find-system :asdf-install))))
   (let ((show-version (find-symbol
                        (symbol-name '#:show-version-information)
-		       '#:asdf-install)))
+                       '#:asdf-install)))
     (when (and show-version (fboundp show-version)) 
       (funcall show-version)))
   (provide 'asdf-install))
@@ -50,3 +49,7 @@
 #+(or)
 (defmethod perform ((o test-op) (c (eql (find-system :asdf-install))))
   t)
+
+;;; Local variables:
+;;; indent-tabs-mode:nil
+;;; End:
