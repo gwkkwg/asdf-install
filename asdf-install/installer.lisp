@@ -432,8 +432,8 @@ the package."
 
 (defun install-packages (packages source system-directory)
   (let ((systems-to-load nil))
-    ;;; First download all the packages and collect a list of
-    ;;; top-level systems that need to be loaded.
+    ;; First download all the packages and collect a list of
+    ;; top-level systems that need to be loaded.
     (loop
        for p in (mapcar (lambda (package)
                           (typecase package
