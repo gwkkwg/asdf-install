@@ -111,10 +111,39 @@
 
 
 (addtest (space-in-working-directory)
-         test-1
-         (ensure-install-results-same
-          '(moptilities moptilities-test closer-mop)
-          (install 'moptilities)))
+  test-1
+  (ensure-install-results-same
+   '(moptilities)
+   (install 'moptilities)))
+
+;;;;;
+
+(deftestsuite direct-install (test-asdf-install)
+  ())
+
+(addtest (direct-install)
+  test-url
+  (ensure-install-results-same
+   '("asdf-binary-locations")
+   (install 
+    "http://common-lisp.net/project/cl-containers/asdf-binary-locations/asdf-binary-locations_latest.tar.gz")))
+
+
+(addtest (direct-install)
+  test-file
+  (ensure-install-results-same
+   '(log5 log5-test)
+   (install
+    (asdf:system-relative-pathname 
+     'test-asdf-install 
+     "../tests/data/log5.tar.gz"))))
+
+;;; Local variables:
+;;; indent-tabs-mode:nil
+;;; End:
+
+;;;;
+
 
 #|
 (asdf-install::local-archive-p 
@@ -135,15 +164,9 @@
 
 /Users/gwking/darcs/asdf-install-unstable/tests/data/log5.tar.gz
 
-(deftestsuite direct-install (test-asdf-install)
-  ())
+(asdf-install::local-archive-p "http://common-lisp.net/project/cl-containers/asdf-binary-locations/asdf-binary-locations_latest.tar.gz")
 
-(addtest (direct-install)
-  test-1
-  (ensure-install-results-same
-   '("asdf-binary-locations")
-   (install 
-    "http://common-lisp.net/project/cl-containers/asdf-binary-locations/asdf-binary-locations_latest.tar.gz")))
+(asdf-install::handle-download-package "http://common-lisp.net/project/cl-containers/asdf-binary-locations/asdf-binary-locations_latest.tar.gz")
 
 
 (Trace asdf-install::install-package)
