@@ -623,12 +623,7 @@ the package."
   (declare (ignore version))
   (when (or (not *propagate-installation*) 
             (member name *systems-installed-this-time* 
-                    :test (lambda (a b)
-                            (flet ((ensure-string (x)
-                                     (etypecase x
-                                       (symbol (symbol-name x))
-                                       (string x))))
-                              (string-equal (ensure-string a) (ensure-string b))))))
+                    :test #'string-equal))
     (call-next-method)))
 
 (defun show-version-information ()
