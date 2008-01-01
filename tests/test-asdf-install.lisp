@@ -15,17 +15,22 @@
   ()
   (:dynamic-variables 
    (*locations* 
-   `((,(merge-pathnames (make-pathname :directory '(:relative "site"))
-			*working-directory*)
-       ,(merge-pathnames (make-pathname :directory '(:relative "site-systems"))
-			 *working-directory*)
-       "temporary install")))
+    `((,(merge-pathnames (make-pathname :directory '(:relative "site"))
+                         *working-directory*)
+        ,(merge-pathnames (make-pathname :directory '(:relative "site-systems"))
+                          *working-directory*)
+        "temporary install")))
    (*preferred-location* "temporary install")
    (asdf-install::*private-asdf-install-dirs* "")
    (asdf:*central-registry* 
-   (list 
-    (merge-pathnames (make-pathname :directory '(:relative "site-systems"))
-		     *working-directory*)))))
+    (list 
+     (merge-pathnames (make-pathname :directory '(:relative "site-systems"))
+                      *working-directory*))))
+  (:setup
+   (delete-directory-and-files *working-directory* :verbose? t 
+                                                   :if-does-not-exist :ignore)
+   (ensure-directories-exist *working-directory*))
+  (:timeout 35))
 
 (deftestsuite test-asdf-install-basic-installation (test-asdf-install) 
   ()
@@ -68,10 +73,10 @@
           (install 'lw-compat)))
 
 (addtest (test-asdf-install-no-gpg-verification)
-         test-download-with-dependencies
-         (ensure-install-results-same
-          '(moptilities moptilities-test)
-          (install 'moptilities)))
+  test-download-with-dependencies
+  (ensure-install-results-same
+   '(moptilities)
+   (install 'moptilities)))
 
 (addtest (test-asdf-install-no-gpg-verification)
          test-download-two-at-once
@@ -80,20 +85,6 @@
           (install '(lw-compat asdf-binary-locations))))
 
 ;;;;;
-
-(deftestsuite test-with-tar-file (test-asdf-install)
-  ())
-
-#+(or)
-(addtest (test-with-tar-file)
-         (let ((result 
-                (install
-                 (namestring (asdf:system-relative-pathname 
-                              'test-asdf-install 
-                              "tests/data/log5_latest.tar.gz")))))
-           (ensure-install-results-same 'log5 'log5-test) result))
-
-;;;;
 
 (deftestsuite space-in-working-directory (test-asdf-install)
   ()
@@ -113,9 +104,11 @@
    (asdf:*central-registry* 
     (list 
      (merge-pathnames (make-pathname :directory '(:relative "site-systems"))
-		      *working-directory*))))
+                      *working-directory*))))
   (:setup 
-   (delete-directory-and-files *working-directory* :if-does-not-exist :ignore)))
+   (delete-directory-and-files *working-directory* 
+                               :if-does-not-exist :ignore)))
+
 
 (addtest (space-in-working-directory)
          test-1
@@ -140,12 +133,7 @@
  'log5
  :where 2)
 
-(asdf-install::local-archive-p (string 'log5))
-
-(trace asdf-install::install-package)
-|#
-
-;;;;;
+/Users/gwking/darcs/asdf-install-unstable/tests/data/log5.tar.gz
 
 (deftestsuite direct-install (test-asdf-install)
   ())
@@ -158,6 +146,5 @@
     "http://common-lisp.net/project/cl-containers/asdf-binary-locations/asdf-binary-locations_latest.tar.gz")))
 
 
-;;; Local variables:
-;;; indent-tabs-mode:nil
-;;; End:
+(Trace asdf-install::install-package)
+|#
