@@ -377,8 +377,7 @@ ASDF-INSTALL."
   (intern 
    (etypecase name
      (symbol (string-upcase (string name)))
-     (string name)
-     (pathname (string-upcase (pathname-name name))))
+     (string name))
    '#:asdf-install))
 
 (defun handle-download-package (package)
