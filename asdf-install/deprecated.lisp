@@ -1,4 +1,4 @@
-(in-package asdf-install)
+(in-package #:asdf-install)
 
 #+(and ignore sbcl) ; Deprecated.
 (define-symbol-macro *sbcl-home* *asdf-install-dirs*)
