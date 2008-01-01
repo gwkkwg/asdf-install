@@ -381,27 +381,77 @@ ASDF-INSTALL."
      (pathname (string-upcase (pathname-name name))))
    '#:asdf-install))
 
+(defun handle-download-package (package)
+  "Determine the package and package-file for a downloaded ASDF package."
+  (multiple-value-bind (package-file signature)
+      (download-files-for-package package)
+    (when (verify-gpg-signatures-p package)
+      (verify-gpg-signature package-file signature))
+    (values (typecase package
+              (pathname nil)
+              (string (if (looks-like-url-p package)
+                          nil (canonical-system-name package)))
+              (t (canonical-system-name package)))
+            package-file)))
+
+(defun handle-local-package (package)
+  "Determine the package and package-file for a local ASDF package. We
+can't determine the package-name until after we've extracted the contents
+of the local file. So we do this in the call to XXX after we've installed
+the package."
+  (values nil package))
+
+(defun determine-package-file (package)
+  (if (local-archive-p package)
+      (handle-local-package package)
+      (handle-download-package package)))
+
+(defun determine-system-names (package package-file system-defs)
+  ;; see determine-package-file too
+  (let ((best-system-name nil))
+    (cond
+      ;; either we have a package already (it was a CLiki downloaded system)
+      ((and (not (null package))
+            (symbolp package)) 
+       (list package))
+      ;; OR, we need to determine the package based on the system-defs 
+      ;; we found and the name of the package-file.
+      ((let ((package-filename (namestring package-file))
+             (best-match 0))
+         (loop for system-def in system-defs 
+            for system-name = (pathname-name system-def) do
+            (when (> (mismatch system-name package-filename) best-match)
+              (setf best-match (mismatch system-name package-file)
+                    best-system-name system-name)))
+         best-system-name)
+       (list best-system-name))
+      ;; OR, that didn't work so we'll have to do all of the systems
+      (t
+       (loop for system-def in system-defs collect
+            (pathname-name system-def))))))
+
 (defun install-packages (packages source system-directory)
   (let ((systems-to-load nil))
     ;;; First download all the packages and collect a list of
     ;;; top-level systems that need to be loaded.
     (loop
-       for p in (mapcar #'string packages)
-       for package-file =
-         (if (local-archive-p p)
-             p
-             (multiple-value-bind (package signature)
-                 (download-files-for-package p)
-               (when (verify-gpg-signatures-p p)
-                 (verify-gpg-signature package signature))
-               (installer-msg t "Installing ~A in ~A, ~A"
-                              p source system-directory)
-               package))
-       do (loop
-             for system in (install-package source
-                                            system-directory
-                                            package-file)
-             do (pushnew system systems-to-load :test #'equal)))
+       for p in (mapcar (lambda (package)
+                          (typecase package
+                            (pathname (namestring package))
+                            (t (string package))))
+                        packages) do
+       (multiple-value-bind (package package-file) 
+           (determine-package-file p)
+         (installer-msg t "Installing ~A in ~A, ~A"
+                        package-file source system-directory)
+         (let ((system-defs
+                (install-package source system-directory package-file)))
+           (loop for system in 
+                (determine-system-names package package-file system-defs) do
+              ;; we only add the systems that were explicitly requested
+              ;; otherwise, we'll load too many systems (like test systems 
+              ;; and platform specific ones).
+                (pushnew system systems-to-load :test #'equal)))))
     
     (setf systems-to-load (nreverse systems-to-load))
     
@@ -466,8 +516,11 @@ ASDF-INSTALL."
 
 (defun local-archive-p (package)
   #+(or :sbcl :allegro) (probe-file package)
-  #-(or :sbcl :allegro) (and (/= (mismatch package "http://") 7)
-                           (probe-file package)))
+  #-(or :sbcl :allegro) (and (not (looks-like-url-p package))
+                             (probe-file package)))
+
+(defun looks-like-url-p (string)
+  (= (mismatch string "http://") 7))
 
 (defun load-package (system)
   #+asdf
