@@ -3,8 +3,8 @@
 (defun ensure-install-results-same (expected actual)
   "Ensure that the list of systems installed is equal to the expected
   list. Order does not matter."
-  (ensure-same (set-difference expected actual :test 'string-equal) '())
-  (ensure-same (set-difference actual expected :test 'string-equal) '()))
+  (ensure-null (set-difference expected actual :test 'string-equal))
+  (ensure-null (set-difference actual expected :test 'string-equal)))
 
 (defvar *working-directory*
   (asdf:system-relative-pathname 
