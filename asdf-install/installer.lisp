@@ -483,10 +483,6 @@ the package."
           (when (probe-file trusted-uid-file)
             (with-open-file (f trusted-uid-file) (read f))))
          (old-uids (copy-list *trusted-uids*))
-         #+asdf
-         (*defined-systems* (if propagate 
-                              (make-hash-table :test 'equal)
-                              *defined-systems*))
          (packages (if (atom packages) (list packages) packages))
          (*propagate-installation* propagate)
          (*systems-installed-this-time* nil))
