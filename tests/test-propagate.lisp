@@ -19,5 +19,5 @@
 (addtest (test-propagate)
   propagate-gets-everything
   (ensure-install-results-same
-   '(moptilities closer-mop lw-compat)
+   '(moptilities closer-mop #-lispworks #:lw-compat)
    (install 'moptilities :propagate t)))

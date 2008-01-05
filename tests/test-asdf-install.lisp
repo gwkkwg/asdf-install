@@ -6,14 +6,15 @@
   (ensure-null (set-difference expected actual :test 'string-equal))
   (ensure-null (set-difference actual expected :test 'string-equal)))
 
-(defvar *working-directory*
-  (asdf:system-relative-pathname 
-   'test-asdf-install 
-   "scratch/"))
+(eval-when (:compile-toplevel :load-toplevel)
+  (defvar *working-directory*
+    (asdf:system-relative-pathname
+     'test-asdf-install
+     "scratch/")))
 
 (deftestsuite test-asdf-install ()
   ()
-  (:dynamic-variables 
+  (:dynamic-variables
    (*locations* 
     `((,(merge-pathnames (make-pathname :directory '(:relative "site"))
                          *working-directory*)
@@ -32,8 +33,14 @@
      (merge-pathnames (make-pathname :directory '(:relative "site-systems"))
                       *working-directory*))))
   (:setup
-   (delete-directory-and-files *working-directory* :verbose? t 
-                                                   :if-does-not-exist :ignore)
+   ;; HACK: Use an external program to remove the scratch directory.
+   ;; Pathname implementations vary so much among Lisps that there's
+   ;; no readily available portable alternative. On Windows, we
+   ;; require Cygwin anyway for now, so rm.exe ought to be available.
+   (asdf-install::return-output-from-program
+    (asdf-install::find-program #+(or :win32 :mswindows) "rm.exe"
+                                #-(or :win32 :mswindows) "rm")
+    (list "-rf" (namestring *working-directory*)))
    (ensure-directories-exist *working-directory*))
   (:timeout 35))
 
@@ -71,6 +78,10 @@
          (ensure-condition 'download-error
                            (install 'i-hope-this-package-does-not-exist)))
 
+;; This test breaks later tests on (at least) CLISP. Not sure why --
+;; the system seems to remember that LW-COMPAT is already installed,
+;; in spite of the binding of ASDF::*DEFINED-SYSTEMS*.
+#+(or)
 (addtest (test-asdf-install-no-gpg-verification)
          test-simple-download
          (ensure-install-results-same
@@ -80,10 +91,7 @@
 (addtest (test-asdf-install-no-gpg-verification)
          test-download-with-dependencies
          (ensure-install-results-same
-          '(moptilities moptilities-test
-            closer-mop
-            lift lift-test
-            #-lispworks #:lw-compat)
+          '(moptilities closer-mop #-lispworks #:lw-compat)
           (install 'moptilities)))
 
 (addtest (test-asdf-install-no-gpg-verification)
@@ -98,9 +106,9 @@
   ()
   ;; ugh -- compare with test-asdf-install, basically the same code...
   (:dynamic-variables 
-   (*working-directory* (asdf:system-relative-pathname 
-                         'test-asdf-install 
-                         "two words/"))
+   (*working-directory*
+    (merge-pathnames (make-pathname :directory '(:relative "two words"))
+                         *working-directory*))
    (*locations* 
     `((,(merge-pathnames (make-pathname :directory '(:relative "site"))
                          *working-directory*)
@@ -112,19 +120,12 @@
    (asdf:*central-registry* 
     (list 
      (merge-pathnames (make-pathname :directory '(:relative "site-systems"))
-                      *working-directory*))))
-  (:setup 
-   (delete-directory-and-files *working-directory* 
-                               :if-does-not-exist :ignore)))
-
+                      *working-directory*)))))
 
 (addtest (space-in-working-directory)
          test-1
          (ensure-install-results-same
-          '(moptilities moptilities-test
-            closer-mop
-            lift lift-test
-            #-lispworks #:lw-compat)
+          '(moptilities closer-mop #-lispworks #:lw-compat)
           (install 'moptilities)))
 ;;;;;
 
@@ -142,11 +143,12 @@
 (addtest (direct-install)
   test-file
   (ensure-install-results-same
-   '(log5 log5-test)
+   '(log5 log5-test lift)
    (install
-    (asdf:system-relative-pathname 
-     'test-asdf-install 
-     "../tests/data/log5.tar.gz"))))
+    (merge-pathnames (make-pathname :directory '(:relative :up :up "tests" "data")
+                                    :name "log5.tar"
+                                    :type "gz")
+                     *working-directory*))))
 
 ;;;;
 
