@@ -140,14 +140,20 @@
     "http://common-lisp.net/project/cl-containers/asdf-binary-locations/asdf-binary-locations_latest.tar.gz")))
 
 
+;; FIXME, I'd rather this be a system file with a dependency
+;; Warning - don't make this a system that depends-on or includes LIFT
+;; because if you do, the test system may well install the web version
+;; of LIFT in place of the currently running LIFT and this may be cause
+;; the universe to be inconsistent.
 (addtest (direct-install)
   test-file
   (ensure-install-results-same
-   '(log5 log5-test lift)
+   '(anaphora)
    (install
-    (merge-pathnames (make-pathname :directory '(:relative :up :up "tests" "data")
-                                    :name "log5.tar"
-                                    :type "gz")
+    (merge-pathnames (make-pathname 
+                      :directory '(:relative :up :up "tests" "data")
+                      :name "anaphora-latest.tar"
+                      :type "gz")
                      *working-directory*))))
 
 ;;;;
