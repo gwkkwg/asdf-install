@@ -55,7 +55,8 @@ namestrings.")
   #-(or :win32 :mswindows)
   ;; bin first
   (list (make-pathname :directory '(:absolute "bin"))
-        (make-pathname :directory '(:absolute "usr" "bin")))
+        (make-pathname :directory '(:absolute "usr" "bin"))
+        (make-pathname :directory '(:absolute "usr" "local" "bin")))
 
   ;; On Windows, there's no notion of standard paths containing other
   ;; than OS components. Simply use the same path that the user does.
