@@ -1,11 +1,25 @@
 (in-package #:asdf-install)
 
-(define-condition download-error (error)
-  ((url :initarg :url :reader download-url)
-   (response :initarg :response :reader download-response))
+(define-condition http-transfer-error (error)
+   ((url :initarg :url :reader download-url)))
+
+(define-condition download-error (http-transfer-error)
+  ((response :initarg :response :reader download-response))
   (:report (lambda (c s)
              (format s "Server responded ~A for GET ~A"
                      (download-response c) (download-url c)))))
+
+(define-condition content-length-missing (http-transfer-error)
+  ()
+  (:report (lambda (c s)
+	     (format s "No content-length header, expected in transfer from ~A"
+		     (download-url c)))))
+
+(define-condition content-length-parse-error (http-transfer-error)
+  ((header-text :initarg :header-text :reader header-text))
+  (:report (lambda (c s)
+	     (format s "Unable to parse content-length header in transfer from ~A: header-text: ~A"
+		     (download-url c) (header-text c)))))
 
 (define-condition signature-error (error)
   ((cause :initarg :cause :reader signature-error-cause))
