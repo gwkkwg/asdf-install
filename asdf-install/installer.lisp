@@ -171,11 +171,19 @@ either nil or the package's signature file name."
         (download-url-to-temporary-file
          (download-link-for-package package-name-or-url)))
     (if (verify-gpg-signatures-p package-name-or-url)
-        (multiple-value-bind (signature-url signature-file) 
-            (download-url-to-temporary-file
-             (download-link-for-signature package-url))
-          (declare (ignore signature-url))
-          (values package-file signature-file))
+        (restart-case 
+            (multiple-value-bind (signature-url signature-file) 
+                (progn
+                  (download-url-to-temporary-file
+                   (download-link-for-signature package-url))
+                  (installer-msg 0 "Download files for ~a" 
+                                 (download-link-for-signature package-url)))  
+              (declare (ignore signature-url))
+              (values package-file signature-file))
+          (ignore-signature-for-this-package (&rest rest)
+            :report "Ignore signature file and install anyway"
+            (declare (ignore rest))
+            (values package-file nil)))
         (values package-file nil))))
   
 (defun verify-gpg-signature (file-name signature-name)
@@ -404,7 +412,7 @@ ASDF-INSTALL."
   "Determine the package and package-file for a downloaded ASDF package."
   (multiple-value-bind (package-file signature)
       (download-files-for-package package)
-    (when (verify-gpg-signatures-p package)
+    (when (and signature (verify-gpg-signatures-p package))
       (verify-gpg-signature package-file signature))
     (values (typecase package
               (pathname nil)
@@ -494,8 +502,10 @@ the package."
 ;;; install
 ;;; This is the external entry point.
 
-(defun install (packages &key (propagate nil) (where *preferred-location*))
-  (let* ((*preferred-location* where)
+(defun install (packages &key (propagate nil) (where *preferred-location*)
+                (verbose nil))
+  (let* ((*verbosity* verbose)
+         (*preferred-location* where)
          (*temporary-files* nil)
          (trusted-uid-file 
           (merge-pathnames "trusted-uids.lisp" *private-asdf-install-dirs*))
