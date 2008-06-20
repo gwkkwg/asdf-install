@@ -4,10 +4,10 @@
 
 (defun ignore-level ()
   (- 30 (case *verbosity*
-          ((nil) 10)
           (:quiet 0)
           (:verbose 20)
-          (:debug 30))))
+          (:debug 30)
+          (t 10))))
 
 (defun installer-msg (importance format-control &rest format-arguments)
   (when (>= importance (ignore-level))
