@@ -72,15 +72,17 @@ in the path."))))
   ()
   (:report (lambda (c s)
              (declare (ignore c))
-             (installer-msg s "Installation aborted."))))
+             (let ((*asdf-install-message-stream* s))
+               (installer-msg 30 "Installation aborted.")))))
 
 (defun report-valid-preferred-locations (stream &optional attempted-location)
   (when attempted-location
-    (installer-msg stream "~s is not a valid value for *preferred-location*"
-                   attempted-location))
-  (installer-msg stream "*preferred-location* may either be nil, a number between 1 and ~d \(the length of *locations*\) or the name of one of the *locations* \(~{~s~^, ~}\). If using a name, then it can be a symbol tested with #'eq or a string tested with #'string-equal."
-                 (length *locations*)
-                 (mapcar #'third *locations*)))
+    (let ((*asdf-install-message-stream* stream))
+      (installer-msg 30 "~s is not a valid value for *preferred-location*"
+                     attempted-location))
+    (installer-msg 30 "*preferred-location* may either be nil, a number between 1 and ~d \(the length of *locations*\) or the name of one of the *locations* \(~{~s~^, ~}\). If using a name, then it can be a symbol tested with #'eq or a string tested with #'string-equal."
+                   (length *locations*)
+                   (mapcar #'third *locations*))))
 
 (define-condition invalid-preferred-location-error (error)
   ((preferred-location :initarg :preferred-location))

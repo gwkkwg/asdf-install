@@ -157,6 +157,17 @@ namestrings.")
 (defvar *temporary-directory* 
   (pathname-sans-name+type (user-homedir-pathname)))
 
+(defvar *verbosity* nil
+  "Should be one of:
+
+ * `nil` - standard verbosity
+ * `:quiet` - shhh
+ * `:verbose` - tell me more
+ * `:debug` - tell me everything
+")
+
+(defvar *asdf-install-message-stream* t)
+
 ;;; Local variables:
 ;;; indent-tabs-mode:nil
 ;;; End:

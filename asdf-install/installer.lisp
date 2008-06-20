@@ -2,9 +2,18 @@
 
 (pushnew :asdf-install *features*)
 
-(defun installer-msg (stream format-control &rest format-arguments)
-  (apply #'format stream "~&;;; ASDF-INSTALL: ~@?~%"
-         format-control format-arguments))
+(defun ignore-level ()
+  (- 30 (case *verbosity*
+          ((nil) 10)
+          (:quiet 0)
+          (:verbose 20)
+          (:debug 30))))
+
+(defun installer-msg (importance format-control &rest format-arguments)
+  (when (>= importance (ignore-level))
+    (apply #'format *asdf-install-message-stream*
+           "~&;;; ASDF-INSTALL: ~@?~%"
+           format-control format-arguments)))
 
 (defun verify-gpg-signatures-p (url)
   (labels ((prefixp (prefix string)
@@ -154,9 +163,13 @@
 (defun download-files-for-package (package-name-or-url)
   "Downloads package file. Returns temporary package file name, and
 either nil or the package's signature file name."
+  (installer-msg 0 "Download files for ~a" package-name-or-url)
   (multiple-value-bind (package-url package-file) 
-      (download-url-to-temporary-file
-       (download-link-for-package package-name-or-url))
+      (progn
+        (installer-msg 0 "  Download ~a" 
+                       (download-link-for-package package-name-or-url))
+        (download-url-to-temporary-file
+         (download-link-for-package package-name-or-url)))
     (if (verify-gpg-signatures-p package-name-or-url)
         (multiple-value-bind (signature-url signature-file) 
             (download-url-to-temporary-file
@@ -166,6 +179,8 @@ either nil or the package's signature file name."
         (values package-file nil))))
   
 (defun verify-gpg-signature (file-name signature-name)
+  (installer-msg 0 "Verify GPG signature ~a, ~a" 
+                 file-name signature-name)
   (block verify
     (loop
       (restart-case
@@ -304,6 +319,7 @@ either nil or the package's signature file name."
 program with name COMMAND which is found in the list of directories in
 *PROGRAM-DIRECTORIES*, or NIL if it cannot be found. COMMAND should
 include the filename and extension, if applicable."
+  (installer-msg 0 "find program for ~a" command)
   (loop for directory in *program-directories* do
        (let ((target (merge-pathnames (pathname command) directory)))
          (when (probe-file target)
@@ -314,6 +330,7 @@ include the filename and extension, if applicable."
   (find-program *gnu-tar-program*))
 
 (defun extract-using-tar (to-dir tarball)
+  (installer-msg 0 "extract with tar ~a to ~a" to-dir tarball)
   (let ((tar-command (tar-command)))
     (if tar-command
         (return-output-from-program tar-command
@@ -349,7 +366,7 @@ include the filename and extension, if applicable."
                                           :name :wild
                                           :type "system")))
        do (funcall *system-file-installer* system-directory sysfile)
-       do (installer-msg t "Found system definition: ~A" sysfile)
+       do (installer-msg 10 "Found system definition: ~A" sysfile)
        do (maybe-update-central-registry sysfile)
        collect sysfile)))
 
@@ -444,7 +461,7 @@ the package."
                         packages) do
        (multiple-value-bind (package package-file) 
            (determine-package-file p)
-         (installer-msg t "Installing ~A in ~A, ~A"
+         (installer-msg 20 "Installing ~A in ~A, ~A"
                         package-file source system-directory)
          (let ((system-defs
                 (install-package source system-directory package-file)))
@@ -497,7 +514,7 @@ the package."
       (unless (equal old-uids *trusted-uids*)
         (let ((create-file-p nil))
           (unless (probe-file trusted-uid-file)
-            (installer-msg t "Trusted UID file ~A does not exist"
+            (installer-msg 30 "Trusted UID file ~A does not exist"
                            (namestring trusted-uid-file))
             (setf create-file-p
                   (y-or-n-p "Do you want to create the file?")))
@@ -521,7 +538,7 @@ the package."
       ((asdf:missing-dependency
         (lambda (c) 
           (installer-msg
-           t
+           10
            "Downloading package ~A, required by ~A~%"
            (asdf::missing-requires c)
            (asdf:component-name 
@@ -531,7 +548,7 @@ the package."
                  :failed-component (asdf::missing-required-by c)
                  :packages-needed (list (asdf::coerce-name
                                          (asdf::missing-requires c)))))))
-    (installer-msg t "Loading system ~S via ASDF." system)
+    (installer-msg 10 "Loading system ~S via ASDF." system)
     (asdf:operate 'asdf:load-op system))
        
   #+mk-defsystem
@@ -539,7 +556,7 @@ the package."
       ((make:missing-component
         (lambda (c) 
           (installer-msg 
-           t
+           10
            "Downloading package ~A, required by ~A~%"
            (make:missing-component-name c)
            system)
@@ -547,7 +564,7 @@ the package."
                  :defsystem :mk-defsystem
                  :failed-component (make:missing-component-component c)
                  :packages-needed (list (make:missing-component-name c))))))
-    (installer-msg t "Loading system ~S via MK:DEFSYSTEM." system)
+    (installer-msg 10 "Loading system ~S via MK:DEFSYSTEM." system)
     (mk:load-system system)))
 
 ;;; uninstall --

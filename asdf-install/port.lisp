@@ -328,7 +328,7 @@
       (error 'download-error :url url :response response))
     (let ((length (parse-integer (or (header-value :content-length headers) "")
                                  :junk-allowed t)))
-      (installer-msg t "Downloading ~A bytes from ~A to ~A ..."
+      (installer-msg 20 "Downloading ~A bytes from ~A to ~A ..."
                      (or length "some unknown number of")
                      url
                      file-name)
