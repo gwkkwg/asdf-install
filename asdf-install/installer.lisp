@@ -667,6 +667,8 @@ the package."
                             (truename (user-homedir-pathname))))))
     (when file (load file))))
 
+(provide 'asdf-install)
+
 ;;; Local variables:
 ;;; indent-tabs-mode:nil
 ;;; End:
