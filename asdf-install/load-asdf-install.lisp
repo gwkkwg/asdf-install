@@ -65,16 +65,13 @@
 
       (load-and-or-compile "ASDF-INSTALL-LIBRARY:defpackage.lisp")
       (load-and-or-compile "ASDF-INSTALL-LIBRARY:port.lisp")
-
-      (unless (find-package '#:split-sequence)
-        (load-and-or-compile "ASDF-INSTALL-LIBRARY:split-sequence.lisp"))
-
+      #+digitool
+      (load-and-or-compile "ASDF-INSTALL-LIBRARY:digitool.lisp")
+      (load-and-or-compile "ASDF-INSTALL-LIBRARY:split-sequence.lisp")
       (load-and-or-compile "ASDF-INSTALL-LIBRARY:variables.lisp")
       (load-and-or-compile "ASDF-INSTALL-LIBRARY:conditions.lisp")
       (load-and-or-compile "ASDF-INSTALL-LIBRARY:installer.lisp")
       ))
-  (pushnew :asdf-install *features*)
-  (provide 'asdf-install)
 
   ;; To clean a minimum (and to make things difficult to debug)...
   ;; (delete-package '#:asdf-install-loader)
