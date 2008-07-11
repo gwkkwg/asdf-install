@@ -20,41 +20,63 @@
 
 ### What it is
 
-ASDF-Install is Common Lisp's answer to CPAN: an internet-based, dependency-chasing, installation system. ASDF-Install was originally written for SBCL by Dan Barlow and then ported by Edi Weitz and many others. It knows how to work with systems defined by either ASDF or MK-Defsystem.
+ASDF-Install is the start of Common Lisp's answer to CPAN: an
+internet-based, dependency-chasing, installation system.
+ASDF-Install was originally written for SBCL by Dan Barlow
+and then ported to other Lisps by Edi Weitz and many others.
+It knows how to work with systems defined by either ASDF or
+MK-Defsystem.
 
-ASDF-Install is a tool for downloading and installing lisp packages. It: 
+ASDF-Install is a tool for downloading and installing lisp
+packages. It:
 
-  * downloads lisp libraries (defined using either [ASDF][4] or [MK-Defsystem][5]) and installs them in the local file system,
+  * downloads lisp libraries (defined using either [ASDF][4]
+    or [MK-Defsystem][5]) and installs them in the local file
+    system,
+
   * chases sub-system dependencies, and 
-  * uses PGP signatures to verify the provenance of the downloaded code (requires [GPG][6]) 
+
+  * uses PGP signatures to verify the provenance of the
+    downloaded code (requires [GPG][6])
 
 The best sources of information on ASDF-Install are
 
-  * The [tutorial][9] (written by [Edi Weitz][8] and now maintained by [Gary King][10])
+  * The [tutorial][9] (written by [Edi Weitz][8] and now
+    maintained by [Gary King][10])
+
   * its [CLiki page][7]
 
 <a id="mailing-lists"></a>
 
 ### Mailing Lists
 
-  * [asdf-install-devel][11]: A list for questions, patches, bug reports, and so on; It's for everything.
+  * [asdf-install-devel][11]: A list for questions, patches,
+    bug reports, and so on; It's for everything.
+
   * You can also use the [CCLAN mailing list][12].
 
 <a href="downloads"></a>
 
 ### Where is it
 
-SBCL (since 0.8.3) and OpenMCL (since 0.14.1) come with a version of ASDF-Install. You can get the latest version with this [gzipped tar file][14]. There is also a darcs repository at:
-    
+SBCL (since 0.8.3) and OpenMCL (since 0.14.1) come with a
+version of ASDF-Install. You can get the latest version with
+this [gzipped tar file][14]. There is also a darcs repository
+at:
+
     darcs get http://common-lisp.net/project/asdf-install
 
-Finally, you should be able to get the latest version using ASDF-Install itself (though you will probably need to edit your local configuration files in order to use this version.
+Finally, you should be able to get the latest version using
+ASDF-Install itself (though you will probably need to edit
+your local configuration files in order to use this version.
 
 There is now an *unstable* darcs repository at
 
     darcs get http://common-lisp.net/project/asdf-install/asdf-install-unstable
 
-This will be used to test new features before they migrate into the stable branch. A (signed) tarball of this repository is in
+This will be used to test new features before they migrate
+into the stable branch. A (signed) tarball of this repository
+is in
 
     http://common-lisp.net/project/asdf-install/asdf-install-unstable/asdf-install.tar.gz
     
