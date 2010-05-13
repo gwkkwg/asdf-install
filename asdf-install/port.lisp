@@ -278,7 +278,7 @@
 ;;; read-header-line
 ;;; ---------------------------------------------------------------------------
 
-#-:digitool
+#-(or digitool clisp)
 (defun read-header-line (stream)
   (read-line stream))
 
@@ -304,6 +304,42 @@
                     (vector-push-extend (code-char byte) line))))
            (when (or byte (plusp (length line)))
              line))))
+
+#+clisp
+(defun read-header-line (stream)
+  (with-output-to-string (s)
+    (loop for ch = (read-char stream nil :eof) 
+       until (eq ch :eof) do
+       (cond ((or (char= ch #\Return)
+		  (char= ch #\Newline)
+		  (char= ch #\Linefeed))
+	      ;; deal with #x0D #x0A
+	      (when (and (char= ch #\Return)
+			 (setf ch (peek-char nil stream nil nil))
+			 (char= ch #\Linefeed))
+		(read-char stream))
+	      ;; we're done
+	      (return))
+	     (t (write-char ch s))))))
+
+#+(or)
+(defun read-header-line (stream)
+  (with-output-to-string (s)
+    (loop for ch = (read-char stream nil :eof) 
+       until (eq ch :eof) do
+       (cond ((or (char= ch #\Return)
+		  (char= ch #\Newline)
+		  (char= ch #\Linefeed))
+              (peek-char nil stream nil nil)
+	      ;; deal with #x0D #x0A
+	      (when (and (char= ch #\Return)
+			 (setf ch (peek-char nil stream nil nil))
+			 (char= ch #\Linefeed))
+		(read-char stream))
+	      ;; we're done
+	      (return))
+	     (t (write-char ch s))))))
+
 
 (defun open-file-arguments ()
   (append 
