@@ -4,7 +4,7 @@
 ;; command line arguments, restructure into smaller pieces
 
 (defun md (name)
-  (let ((input (dsc:system-relative-pathname 
+  (let ((input (system-relative-pathname  
 		'asdf-install 
 		(make-pathname 
 		 :directory '(:relative :back "website" "source" "tutorial")
@@ -21,12 +21,12 @@
 
 (defun md-all ()
   (let ((wild-source
-	 (dsc:system-relative-pathname 
+	 (system-relative-pathname 
 	  'asdf-install 
 	  (make-pathname 
 	   :directory '(:relative :back "website" "source" "tutorial")
 	   :name :wild
-	   :type "md")))
+	   :type "mmd")))
 	(wild-target 
 	 (system-relative-pathname 
 	  'asdf-install 
@@ -42,6 +42,7 @@
    :format :html
    :additional-extensions '(docs today now))))
 
+#+(or)
 (md-all)
 
 #|
@@ -53,6 +54,8 @@ No reference found for link "149"
 Rendering: #P"/Users/gwking/darcs/asdf-install/website/output/tutorial/setup.html"No reference found for link "80"
 Rendering: #P"/Users/gwking/darcs/asdf-install/website/output/tutorial/uninstall.html"
 |#
+
+#|
 
 ;;;;;;;;; what about PDF?
 
@@ -91,3 +94,5 @@ Fun!
    [121]: http://uffi.b9.com/
 
 ")
+
+|#

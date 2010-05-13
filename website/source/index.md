@@ -1,6 +1,6 @@
 {set-property html yes}
 {set-property style-sheet style}
-{set-property title ASDF-Install}
+{set-property title "ASDF-Install"}
 
 <div class="header">
 
@@ -85,30 +85,44 @@ is in
 ### What is happening
 
 <table class="system-news">
-  <tr>
-    <th>
-        2 December 2007
-    </th>
-    <td>
-        Dan Muller, Andy Cristina and Attila Lendvai greatly improve ASDF-Install's windows support. Thanks! These changes are in the *unstable* branch (see above)
-    </td>
-  </tr>
-  <tr>
-    <th>
-      7 October 2006
-    </th>
-    <td>
-      Updated to version 0.6.0; attempts to improve GPG handling by simplifying it. Added :where argument to the install command. Altered location handling so that 0 is always cancel. Began to rework tutorial.
-    </td>
-  </tr>
-  <tr>
-    <th>
-      17 May 2006
-    </th>
-    <td>
-      Moved from Source Forge to Common-Lisp.net
-    </td>
-  </tr>
+<tr>
+  <th>
+      13 June 2008
+  </th>
+  <td>
+
+Thanks to Scott Burson for pointing out that
+ASDF-Install has a README file (I had forgotten!)
+and that it was out of date. This, and the
+`load-asdf-install.lisp` file it mentions are now
+working correctly again.
+
+  </td>
+</tr>
+<tr>
+  <th>
+      2 December 2007
+  </th>
+  <td>
+      Dan Muller, Andy Cristina and Attila Lendvai greatly improve ASDF-Install's windows support. Thanks! These changes are in the *unstable* branch (see above)
+  </td>
+</tr>
+<tr>
+  <th>
+    7 October 2006
+  </th>
+  <td>
+    Updated to version 0.6.0; attempts to improve GPG handling by simplifying it. Added :where argument to the install command. Altered location handling so that 0 is always cancel. Began to rework tutorial.
+  </td>
+</tr>
+<tr>
+  <th>
+    17 May 2006
+  </th>
+  <td>
+    Moved from Source Forge to Common-Lisp.net
+  </td>
+</tr>
 </table>
 
 

@@ -1,5 +1,5 @@
 <div id="footer">
-{include resources/navigation.md}
+{include navigation.md}
 
 ### Copyright
 

@@ -1,4 +1,4 @@
-{set-property gwking-copyright-year "2007"}
+{set-property gwking-copyright-year "2009"}
 {set-property html yes}
 {set-property style-sheet style}
 
@@ -28,11 +28,14 @@
   [hs-restart]: http://www.lispworks.com/documentation/HyperSpec/Body/09_adb.htm
   [hs-require]: http://www.lispworks.com/documentation/HyperSpec/Body/f_provid.htm
 
+  [download-asdf]: http://common-lisp.net/project/asdf/
+  [download-asdf-install]: http://common-lisp.net/project/asdf-install/
+
 
 
 ## ASDF-INSTALL Tutorial
 
 <div id="header">
-{include resources/navigation.md}
+{include navigation.md}
 </div>
 

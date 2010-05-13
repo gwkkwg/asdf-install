@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>currentDocument</key>
-	<string>../asdf-install/README</string>
+	<string>source/tutorial/resources/header.md</string>
 	<key>documents</key>
 	<array>
 		<dict>
@@ -47,57 +47,47 @@
 			<array>
 				<dict>
 					<key>filename</key>
-					<string>source/tutorial/setup.md</string>
-					<key>lastUsed</key>
-					<date>2007-12-03T02:42:50Z</date>
+					<string>source/tutorial/changelog.mmd</string>
 				</dict>
 				<dict>
 					<key>filename</key>
-					<string>source/tutorial/reference.md</string>
+					<string>source/tutorial/copyright.mmd</string>
 					<key>lastUsed</key>
-					<date>2007-11-12T04:14:01Z</date>
+					<date>2009-07-20T13:32:04Z</date>
 				</dict>
 				<dict>
 					<key>filename</key>
-					<string>source/tutorial/introduction.md</string>
-					<key>lastUsed</key>
-					<date>2007-11-10T23:19:09Z</date>
+					<string>source/tutorial/index.mmd</string>
 				</dict>
 				<dict>
 					<key>filename</key>
-					<string>source/tutorial/install.md</string>
-					<key>lastUsed</key>
-					<date>2007-12-03T02:42:12Z</date>
+					<string>source/tutorial/install.mmd</string>
 				</dict>
 				<dict>
 					<key>filename</key>
-					<string>source/tutorial/index.md</string>
-					<key>lastUsed</key>
-					<date>2007-12-03T02:41:59Z</date>
+					<string>source/tutorial/introduction.mmd</string>
 				</dict>
 				<dict>
 					<key>filename</key>
-					<string>source/tutorial/copyright.md</string>
-					<key>lastUsed</key>
-					<date>2007-11-10T21:00:00Z</date>
+					<string>source/tutorial/notes.mmd</string>
 				</dict>
 				<dict>
 					<key>filename</key>
-					<string>source/tutorial/changelog.md</string>
-					<key>lastUsed</key>
-					<date>2007-11-10T03:07:48Z</date>
+					<string>source/tutorial/reference.mmd</string>
+				</dict>
+				<dict>
+					<key>filename</key>
+					<string>source/tutorial/setup.mmd</string>
+				</dict>
+				<dict>
+					<key>filename</key>
+					<string>source/tutorial/uninstall.mmd</string>
 				</dict>
 				<dict>
 					<key>filename</key>
 					<string>source/tutorial/create-it.lisp</string>
 					<key>lastUsed</key>
-					<date>2007-11-10T03:07:45Z</date>
-				</dict>
-				<dict>
-					<key>filename</key>
-					<string>source/tutorial/uninstall.md</string>
-					<key>lastUsed</key>
-					<date>2007-11-10T22:25:26Z</date>
+					<date>2008-08-12T01:13:06Z</date>
 				</dict>
 			</array>
 			<key>expanded</key>
@@ -109,15 +99,13 @@
 			<key>filename</key>
 			<string>../asdf-install/README</string>
 			<key>lastUsed</key>
-			<date>2008-07-11T02:58:58Z</date>
-			<key>selected</key>
-			<true/>
+			<date>2008-08-11T23:50:54Z</date>
 		</dict>
 		<dict>
 			<key>filename</key>
 			<string>source/index.md</string>
 			<key>lastUsed</key>
-			<date>2008-07-11T02:58:58Z</date>
+			<date>2009-07-20T13:31:36Z</date>
 		</dict>
 	</array>
 	<key>fileHierarchyDrawerWidth</key>
@@ -152,33 +140,35 @@
 			<key>firstVisibleLine</key>
 			<integer>0</integer>
 		</dict>
-		<key>source/tutorial/changelog.md</key>
+		<key>source/tutorial/copyright.mmd</key>
 		<dict>
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>19</integer>
+				<integer>49</integer>
 				<key>line</key>
-				<integer>0</integer>
+				<integer>5</integer>
 			</dict>
+			<key>columnSelection</key>
+			<false/>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
 			<integer>0</integer>
-		</dict>
-		<key>source/tutorial/copyright.md</key>
-		<dict>
-			<key>caret</key>
+			<key>selectFrom</key>
 			<dict>
 				<key>column</key>
-				<integer>0</integer>
+				<integer>29</integer>
 				<key>line</key>
-				<integer>8</integer>
+				<integer>5</integer>
 			</dict>
-			<key>firstVisibleColumn</key>
-			<integer>0</integer>
-			<key>firstVisibleLine</key>
-			<integer>5</integer>
+			<key>selectTo</key>
+			<dict>
+				<key>column</key>
+				<integer>49</integer>
+				<key>line</key>
+				<integer>5</integer>
+			</dict>
 		</dict>
 		<key>source/tutorial/create-it.lisp</key>
 		<dict>
@@ -208,64 +198,6 @@
 			<key>firstVisibleLine</key>
 			<integer>406</integer>
 		</dict>
-		<key>source/tutorial/index.md</key>
-		<dict>
-			<key>caret</key>
-			<dict>
-				<key>column</key>
-				<integer>0</integer>
-				<key>line</key>
-				<integer>3</integer>
-			</dict>
-			<key>firstVisibleColumn</key>
-			<integer>0</integer>
-			<key>firstVisibleLine</key>
-			<integer>0</integer>
-		</dict>
-		<key>source/tutorial/install.md</key>
-		<dict>
-			<key>caret</key>
-			<dict>
-				<key>column</key>
-				<integer>331</integer>
-				<key>line</key>
-				<integer>273</integer>
-			</dict>
-			<key>firstVisibleColumn</key>
-			<integer>0</integer>
-			<key>firstVisibleLine</key>
-			<integer>262</integer>
-		</dict>
-		<key>source/tutorial/introduction.md</key>
-		<dict>
-			<key>caret</key>
-			<dict>
-				<key>column</key>
-				<integer>25</integer>
-				<key>line</key>
-				<integer>40</integer>
-			</dict>
-			<key>columnSelection</key>
-			<false/>
-			<key>firstVisibleColumn</key>
-			<integer>178</integer>
-			<key>firstVisibleLine</key>
-			<integer>29</integer>
-			<key>selectFrom</key>
-			<dict>
-				<key>column</key>
-				<integer>20</integer>
-				<key>line</key>
-				<integer>40</integer>
-			</dict>
-			<key>selectTo</key>
-			<dict>
-				<key>column</key>
-				<integer>25</integer>
-				<key>line</key>
-				<integer>40</integer>
-			</dict>
-		</dict>
 		<key>source/tutorial/notes.md</key>
 		<dict>
 			<key>caret</key>
@@ -280,28 +212,14 @@
 			<key>firstVisibleLine</key>
 			<integer>0</integer>
 		</dict>
-		<key>source/tutorial/reference.md</key>
-		<dict>
-			<key>caret</key>
-			<dict>
-				<key>column</key>
-				<integer>36</integer>
-				<key>line</key>
-				<integer>131</integer>
-			</dict>
-			<key>firstVisibleColumn</key>
-			<integer>0</integer>
-			<key>firstVisibleLine</key>
-			<integer>124</integer>
-		</dict>
 		<key>source/tutorial/resources/footer.md</key>
 		<dict>
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>13</integer>
+				<integer>9</integer>
 				<key>line</key>
-				<integer>3</integer>
+				<integer>1</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
@@ -313,9 +231,9 @@
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>0</integer>
+				<integer>37</integer>
 				<key>line</key>
-				<integer>3</integer>
+				<integer>4</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
@@ -336,85 +254,18 @@
 			<key>firstVisibleLine</key>
 			<integer>0</integer>
 		</dict>
-		<key>source/tutorial/setup.md</key>
-		<dict>
-			<key>caret</key>
-			<dict>
-				<key>column</key>
-				<integer>262</integer>
-				<key>line</key>
-				<integer>98</integer>
-			</dict>
-			<key>columnSelection</key>
-			<false/>
-			<key>firstVisibleColumn</key>
-			<integer>0</integer>
-			<key>firstVisibleLine</key>
-			<integer>87</integer>
-			<key>selectFrom</key>
-			<dict>
-				<key>column</key>
-				<integer>259</integer>
-				<key>line</key>
-				<integer>98</integer>
-			</dict>
-			<key>selectTo</key>
-			<dict>
-				<key>column</key>
-				<integer>262</integer>
-				<key>line</key>
-				<integer>98</integer>
-			</dict>
-		</dict>
-		<key>source/tutorial/uninstall.md</key>
-		<dict>
-			<key>caret</key>
-			<dict>
-				<key>column</key>
-				<integer>154</integer>
-				<key>line</key>
-				<integer>11</integer>
-			</dict>
-			<key>columnSelection</key>
-			<false/>
-			<key>firstVisibleColumn</key>
-			<integer>0</integer>
-			<key>firstVisibleLine</key>
-			<integer>0</integer>
-			<key>selectFrom</key>
-			<dict>
-				<key>column</key>
-				<integer>151</integer>
-				<key>line</key>
-				<integer>11</integer>
-			</dict>
-			<key>selectTo</key>
-			<dict>
-				<key>column</key>
-				<integer>154</integer>
-				<key>line</key>
-				<integer>11</integer>
-			</dict>
-		</dict>
 	</dict>
 	<key>openDocuments</key>
 	<array>
-		<string>source/tutorial/install.md</string>
-		<string>source/tutorial/index.md</string>
-		<string>source/tutorial/copyright.md</string>
-		<string>source/tutorial/changelog.md</string>
 		<string>source/tutorial/resources/footer.md</string>
 		<string>source/tutorial/resources/header.md</string>
 		<string>source/tutorial/resources/navigation.md</string>
-		<string>source/tutorial/uninstall.md</string>
 		<string>source/tutorial/create-it.lisp</string>
-		<string>source/tutorial/setup.md</string>
 		<string>source/index.md</string>
+		<string>source/tutorial/copyright.mmd</string>
 		<string>../asdf-install/README</string>
 		<string>source/tutorial/index-save.html</string>
-		<string>source/tutorial/reference.md</string>
 		<string>source/tutorial/notes.md</string>
-		<string>source/tutorial/introduction.md</string>
 	</array>
 	<key>showFileHierarchyDrawer</key>
 	<true/>
