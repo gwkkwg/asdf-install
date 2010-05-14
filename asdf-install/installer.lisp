@@ -645,7 +645,7 @@ the package."
             (and (typep name '(or string (and symbol (not null))))
                  (member name *systems-installed-this-time*
                          :test #'string-equal)))
-
+    (call-next-method)))
 
 (defun show-version-information ()
   (let ((version (asdf-install-version)))

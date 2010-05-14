@@ -19,7 +19,7 @@
   #+:sbcl
   (require :sb-bsd-sockets)
   #+:sbcl
-  (require :sb-posix))
+  (require :sb-posix)
   )
 
 (defun get-env-var (name)
