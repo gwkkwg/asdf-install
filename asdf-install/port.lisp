@@ -16,6 +16,10 @@
   (require :sockets)
   #+:lispworks
   (require "comm")
+  #+:sbcl
+  (require :sb-bsd-sockets)
+  #+:sbcl
+  (require :sb-posix))
   )
 
 (defun get-env-var (name)

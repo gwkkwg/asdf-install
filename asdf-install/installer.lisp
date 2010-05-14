@@ -639,12 +639,13 @@ the package."
 ;;; been (or is being) specifically installed by the current
 ;;; invocation of ASDF-INSTALL:INSTALL.
 (defmethod asdf:find-component :around 
-    ((module (eql nil)) name &optional version)
-  (declare (ignore version))
-  (when (or (not *propagate-installation*) 
-            (member name *systems-installed-this-time* 
-                    :test #'string-equal))
-    (call-next-method)))
+    ((module (eql nil)) name #-asdf2 &optional #-asdf2 version)
+  #-asdf2 (declare (ignore version))
+  (when (or (not *propagate-installation*)
+            (and (typep name '(or string (and symbol (not null))))
+                 (member name *systems-installed-this-time*
+                         :test #'string-equal)))
+
 
 (defun show-version-information ()
   (let ((version (asdf-install-version)))
